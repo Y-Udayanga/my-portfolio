@@ -1,0 +1,271 @@
+/* ═══════════════════════════════════════════
+   CERTIFICATE — 2030 FUTURISTIC
+   ═══════════════════════════════════════════ */
+
+.certificate-container {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* ── Holographic Cert Card ── */
+.cert-card {
+  position: relative;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cert-card:hover {
+  transform: translateY(-6px);
+}
+
+.cert-card-border {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.15),
+    transparent 40%,
+    transparent 60%,
+    rgba(0, 240, 255, 0.15)
+  );
+  opacity: 0.5;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+.cert-card:hover .cert-card-border {
+  opacity: 1;
+  animation: holographic-shimmer 3s ease infinite;
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.3),
+    rgba(0, 240, 255, 0.2),
+    rgba(246, 55, 236, 0.2),
+    rgba(168, 85, 247, 0.3)
+  );
+  background-size: 300% 300%;
+}
+
+.cert-card-inner {
+  position: relative;
+  z-index: 1;
+  background: var(--bg-secondary);
+  border-radius: inherit;
+  margin: 1px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cert-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  color: var(--accent-violet);
+  transition: all 0.3s ease;
+}
+
+.cert-card:hover .cert-icon-wrapper {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.cert-image-preview {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+  border: 1px solid rgba(0, 240, 255, 0.06);
+  transition: opacity 0.3s ease;
+}
+
+.cert-card:hover .cert-image-preview {
+  opacity: 0.9;
+}
+
+.cert-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.cert-issuer {
+  color: var(--accent-cyan);
+  font-size: 0.75rem;
+  margin-bottom: 2rem;
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+.cert-btn {
+  width: 100%;
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════
+   MODAL — FUTURISTIC
+   ═══════════════════════════════════════════ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(5, 10, 24, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  z-index: 2001;
+}
+
+.modal-border {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet), var(--accent-magenta), var(--accent-cyan));
+  background-size: 300% 300%;
+  animation: holographic-shimmer 4s ease infinite;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.modal-inner {
+  position: relative;
+  z-index: 1;
+  background: var(--bg-primary);
+  border-radius: inherit;
+  margin: 1px;
+  overflow: hidden;
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 0.5rem;
+  background: rgba(5, 10, 24, 0.7);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  background: rgba(0, 240, 255, 0.1);
+  box-shadow: var(--glow-cyan);
+}
+
+.modal-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+}
+
+.modal-details {
+  padding: 2.5rem;
+}
+
+.modal-issuer {
+  color: var(--accent-cyan);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.modal-desc {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.modal-meta {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta-item svg {
+  color: var(--accent-cyan);
+  opacity: 0.6;
+}
+
+.validation-btn {
+  width: 100%;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .modal-meta {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
