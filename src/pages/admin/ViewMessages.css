@@ -1,0 +1,321 @@
+.view-messages-page {
+  height: calc(100vh - 170px);
+  display: flex;
+  flex-direction: column;
+}
+
+.inbox-container {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  overflow: hidden;
+  height: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .inbox-container {
+    grid-template-columns: 1fr;
+  }
+  .inbox-view-pane {
+    display: none;
+  }
+}
+
+.inbox-sidebar {
+  border-right: 1px solid var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.inbox-sidebar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 13px;
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.inbox-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.inbox-item {
+  padding: 20px;
+  border-bottom: 1px solid var(--admin-border);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.inbox-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.inbox-item.active {
+  background: var(--admin-primary-glow);
+  border-left: 3px solid var(--admin-primary);
+  padding-left: 17px;
+}
+
+.inbox-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.inbox-sender-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.inbox-item-time {
+  font-size: 11px;
+  color: var(--admin-text-muted);
+}
+
+.inbox-sender-email {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-item-snippet {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--admin-text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 20px;
+}
+
+.arrow-indicator {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--admin-text-muted);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.inbox-item:hover .arrow-indicator {
+  opacity: 0.5;
+  right: 12px;
+}
+
+.inbox-item.active .arrow-indicator {
+  color: var(--admin-primary);
+  opacity: 1;
+  right: 12px;
+}
+
+.inbox-view-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.no-selection-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  color: var(--admin-text-muted);
+}
+
+.no-selection-state .empty-icon {
+  opacity: 0.2;
+}
+
+.empty-inbox-state {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 80px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--admin-text-muted);
+  flex: 1;
+}
+
+.empty-inbox-state .empty-icon {
+  opacity: 0.3;
+}
+
+.empty-inbox-state h3 {
+  font-size: 18px;
+  color: #fff;
+  margin: 0;
+}
+
+.empty-inbox-state p {
+  font-size: 14px;
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.message-detail {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  border-bottom: 1px solid var(--admin-border);
+  padding-bottom: 24px;
+  position: relative;
+}
+
+.sender-avatar-large {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--admin-primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--admin-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.header-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header-meta h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.email-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.email-address {
+  font-size: 13px;
+  color: var(--admin-text-muted);
+}
+
+.btn-copy,
+.btn-reply {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-copy:hover,
+.btn-reply:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--admin-border-hover);
+}
+
+.btn-reply {
+  background: var(--admin-primary);
+  color: #fff;
+  border: none;
+}
+
+.btn-reply:hover {
+  background: var(--admin-primary-hover);
+}
+
+.copied-icon {
+  color: var(--admin-success);
+}
+
+.btn-delete-msg {
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-delete-msg:hover {
+  border-color: var(--admin-danger);
+  color: var(--admin-danger);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.detail-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.detail-body {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--admin-text);
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--admin-border);
+  padding: 24px;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  box-sizing: border-box;
+}

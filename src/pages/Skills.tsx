@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+
 import PageTransition from '../components/PageTransition';
 
 const Skills = () => {

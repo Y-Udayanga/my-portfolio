@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Calendar, ExternalLink, X } from 'lucide-react';
+import { Award, Calendar, ExternalLink, X, Loader2 } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
+import { databases, APPWRITE_DATABASE_ID, APPWRITE_CERTIFICATES_COL_ID } from '../lib/appwrite';
 import './Certificate.css';
 
-const certificatesData = [
+interface Certificate {
+    $id: string;
+    title: string;
+    issuer: string;
+    date: string;
+    expiry: string;
+    description: string;
+    image: string;
+    link: string;
+}
+
+const fallbackCertificatesData: Certificate[] = [
     {
-        id: 1,
+        $id: '1',
         title: 'AWS Certified Solutions Architect',
         issuer: 'Amazon Web Services',
         date: 'Jan 2025',
@@ -16,7 +28,7 @@ const certificatesData = [
         link: '#'
     },
     {
-        id: 2,
+        $id: '2',
         title: 'Meta Front-End Developer',
         issuer: 'Coursera (Meta)',
         date: 'Nov 2024',
@@ -28,7 +40,32 @@ const certificatesData = [
 ];
 
 const Certificate = () => {
-    const [selectedCert, setSelectedCert] = useState<number | null>(null);
+    const [selectedCert, setSelectedCert] = useState<string | null>(null);
+    const [certificates, setCertificates] = useState<Certificate[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCertificates = async () => {
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_DATABASE_ID,
+                    APPWRITE_CERTIFICATES_COL_ID
+                );
+                if (response.documents.length > 0) {
+                    setCertificates(response.documents as unknown as Certificate[]);
+                } else {
+                    setCertificates(fallbackCertificatesData);
+                }
+            } catch (error) {
+                console.error('Failed to load certificates from Appwrite, using fallback:', error);
+                setCertificates(fallbackCertificatesData);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCertificates();
+    }, []);
 
     return (
         <PageTransition>
@@ -50,34 +87,40 @@ const Certificate = () => {
                     </motion.h1>
                 </div>
 
-                <div className="cert-grid">
-                    {certificatesData.map((cert, index) => (
-                        <motion.div
-                            key={cert.id}
-                            className="cert-card"
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.2 }}
-                        >
-                            <div className="cert-card-border" />
-                            <div className="cert-card-inner">
-                                <div className="cert-icon-wrapper">
-                                    <Award size={28} />
-                                </div>
-                                <img src={cert.image} alt={cert.title} className="cert-image-preview" />
-                                <h3 className="cert-title">{cert.title}</h3>
-                                <p className="cert-issuer font-mono">{cert.issuer}</p>
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+                        <Loader2 className="spinner" size={32} style={{ color: '#6366f1', animation: 'spin 1s linear infinite' }} />
+                    </div>
+                ) : (
+                    <div className="cert-grid">
+                        {certificates.map((cert, index) => (
+                            <motion.div
+                                key={cert.$id}
+                                className="cert-card"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.2 }}
+                            >
+                                <div className="cert-card-border" />
+                                <div className="cert-card-inner">
+                                    <div className="cert-icon-wrapper">
+                                        <Award size={28} />
+                                    </div>
+                                    <img src={cert.image} alt={cert.title} className="cert-image-preview" />
+                                    <h3 className="cert-title">{cert.title}</h3>
+                                    <p className="cert-issuer font-mono">{cert.issuer}</p>
 
-                                <button
-                                    className="btn btn-outline cert-btn"
-                                    onClick={() => setSelectedCert(cert.id)}
-                                >
-                                    More Details
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+                                    <button
+                                        className="btn btn-outline cert-btn"
+                                        onClick={() => setSelectedCert(cert.$id)}
+                                    >
+                                        More Details
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Modal for Certificate Details */}
                 <AnimatePresence>
@@ -90,9 +133,9 @@ const Certificate = () => {
                         >
                             <div className="modal-backdrop" onClick={() => setSelectedCert(null)} />
 
-                            {certificatesData.filter(c => c.id === selectedCert).map(cert => (
+                            {certificates.filter(c => c.$id === selectedCert).map(cert => (
                                 <motion.div
-                                    key={cert.id}
+                                    key={cert.$id}
                                     className="modal-content"
                                     initial={{ scale: 0.9, y: 20, opacity: 0 }}
                                     animate={{ scale: 1, y: 0, opacity: 1 }}

@@ -1,0 +1,218 @@
+.page-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 24px;
+}
+
+.page-subtitle {
+  color: var(--admin-text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.btn-add-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--admin-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-add-item:hover {
+  background: var(--admin-primary-hover);
+  box-shadow: 0 4px 12px var(--admin-primary-glow);
+}
+
+.error-banner {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  color: #f87171;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.loading-state,
+.empty-certs-state {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 80px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--admin-text-muted);
+}
+
+.loading-state .spinner {
+  color: var(--admin-primary);
+  animation: spin 1s linear infinite;
+}
+
+.admin-certs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.admin-cert-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+  box-sizing: border-box;
+}
+
+.admin-cert-card:hover {
+  border-color: var(--admin-border-hover);
+  transform: translateY(-2px);
+}
+
+.cert-card-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cert-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cert-header-text h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+}
+
+.issuer-text {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  margin: 0;
+  font-family: monospace;
+}
+
+.cert-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cert-meta-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--admin-text-muted);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--admin-border);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.desc-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--admin-text-muted);
+  margin: 0 0 16px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cert-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--admin-border);
+  padding-top: 16px;
+}
+
+.action-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--admin-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.action-link:hover {
+  color: #818cf8;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--admin-border);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--admin-text-muted);
+}
+
+.btn-edit:hover {
+  border-color: var(--admin-primary);
+  color: #fff;
+  background: var(--admin-primary-glow);
+}
+
+.btn-delete:hover {
+  border-color: var(--admin-danger);
+  color: #fff;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Modal and form row layouts */
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 576px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

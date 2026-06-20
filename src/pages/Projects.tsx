@@ -1,11 +1,22 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Loader2 } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
+import { databases, APPWRITE_DATABASE_ID, APPWRITE_PROJECTS_COL_ID } from '../lib/appwrite';
 import './Projects.css';
 
-const projectsData = [
+interface Project {
+    $id: string;
+    title: string;
+    description: string;
+    image: string;
+    tags: string[];
+    link: string;
+}
+
+const fallbackProjectsData: Project[] = [
     {
-        id: 1,
+        $id: '1',
         title: 'E-Commerce Platform',
         description: 'A full-stack e-commerce application built with React, Spring Boot, and PostgreSQL. Features user authentication, payment processing, and an admin dashboard.',
         image: 'https://images.unsplash.com/photo-1557821552-17105176677c?w=500&q=80',
@@ -13,7 +24,7 @@ const projectsData = [
         link: '#'
     },
     {
-        id: 2,
+        $id: '2',
         title: 'AI Dashboard',
         description: 'An interactive data visualization dashboard integrating various machine learning models to provide real-time business insights.',
         image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80',
@@ -21,7 +32,7 @@ const projectsData = [
         link: '#'
     },
     {
-        id: 3,
+        $id: '3',
         title: 'Task Management System',
         description: 'A collaborative project management tool inspired by Trello, featuring real-time updates and seamless team workflow integration.',
         image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&q=80',
@@ -46,6 +57,32 @@ const itemVariants = {
 };
 
 const Projects = () => {
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_DATABASE_ID,
+                    APPWRITE_PROJECTS_COL_ID
+                );
+                if (response.documents.length > 0) {
+                    setProjects(response.documents as unknown as Project[]);
+                } else {
+                    setProjects(fallbackProjectsData);
+                }
+            } catch (error) {
+                console.error('Failed to load projects from Appwrite, using fallback:', error);
+                setProjects(fallbackProjectsData);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
+    }, []);
+
     return (
         <PageTransition>
             <div className="projects-container container">
@@ -74,43 +111,49 @@ const Projects = () => {
                     </motion.p>
                 </div>
 
-                <motion.div
-                    className="projects-grid"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="show"
-                >
-                    {projectsData.map((project) => (
-                        <motion.div key={project.id} className="project-card" variants={itemVariants}>
-                            <div className="project-card-border" />
-                            <div className="project-card-inner">
-                                <div className="project-image-container">
-                                    <img src={project.image} alt={project.title} className="project-image" />
-                                    <div className="project-overlay">
-                                        <a href={project.link} className="btn btn-primary overlay-btn">
-                                            View Live <ExternalLink size={16} />
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+                        <Loader2 className="spinner" size={32} style={{ color: '#6366f1', animation: 'spin 1s linear infinite' }} />
+                    </div>
+                ) : (
+                    <motion.div
+                        className="projects-grid"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="show"
+                    >
+                        {projects.map((project) => (
+                            <motion.div key={project.$id} className="project-card" variants={itemVariants}>
+                                <div className="project-card-border" />
+                                <div className="project-card-inner">
+                                    <div className="project-image-container">
+                                        <img src={project.image} alt={project.title} className="project-image" />
+                                        <div className="project-overlay">
+                                            <a href={project.link} className="btn btn-primary overlay-btn" target="_blank" rel="noreferrer">
+                                                View Live <ExternalLink size={16} />
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div className="project-content">
+                                        <h3 className="project-title">{project.title}</h3>
+                                        <p className="project-desc">{project.description}</p>
+
+                                        <div className="project-tags">
+                                            {project.tags && project.tags.map(tag => (
+                                                <span key={tag} className="tag font-mono">{tag}</span>
+                                            ))}
+                                        </div>
+
+                                        <a href={project.link} target="_blank" rel="noreferrer" className="btn btn-outline more-details-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                                            More Details
                                         </a>
                                     </div>
                                 </div>
-
-                                <div className="project-content">
-                                    <h3 className="project-title">{project.title}</h3>
-                                    <p className="project-desc">{project.description}</p>
-
-                                    <div className="project-tags">
-                                        {project.tags.map(tag => (
-                                            <span key={tag} className="tag font-mono">{tag}</span>
-                                        ))}
-                                    </div>
-
-                                    <button className="btn btn-outline more-details-btn">
-                                        More Details
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
             </div>
         </PageTransition>
     );
