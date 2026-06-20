@@ -36,7 +36,7 @@ const About = () => {
                         <div className="about-image-inner">
                             <div className="about-image-wrapper">
                                 <img
-                                    src="https://images.unsplash.com/photo-1549692520-acc6669e2f0c?w=500&q=80"
+                                    src="/myphoto.png"
                                     alt="Yasindu Udayanga Working"
                                     className="about-image"
                                 />

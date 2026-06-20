@@ -9,7 +9,8 @@ import {
     Youtube,
     Send,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    Mail
 } from 'lucide-react';
 import { ID } from 'appwrite';
 import { databases, APPWRITE_DATABASE_ID, APPWRITE_MESSAGES_COL_ID } from '../lib/appwrite';
@@ -31,14 +32,15 @@ const WhatsAppIcon = () => (
 );
 
 const socialLinks = [
-    { name: 'LinkedIn', icon: <Linkedin size={22} />, url: '#', color: '#0077b5' },
-    { name: 'GitHub', icon: <Github size={22} />, url: '#', color: '#00f0ff' },
-    { name: 'X', icon: <Twitter size={22} />, url: '#', color: '#1da1f2' },
-    { name: 'Instagram', icon: <Instagram size={22} />, url: '#', color: '#e1306c' },
-    { name: 'Facebook', icon: <Facebook size={22} />, url: '#', color: '#1877f2' },
-    { name: 'WhatsApp', icon: <WhatsAppIcon />, url: '#', color: '#25d366' },
-    { name: 'TikTok', icon: <TikTokIcon />, url: '#', color: '#f637ec' },
-    { name: 'YouTube', icon: <Youtube size={22} />, url: '#', color: '#ff0000' },
+    { name: 'Email', icon: <Mail size={22} />, url: 'mailto:udayangayasindu84@gmail.com', color: '#f637ec' },
+    { name: 'LinkedIn', icon: <Linkedin size={22} />, url: 'https://www.linkedin.com/in/yasindu-udayanga', color: '#0077b5' },
+    { name: 'GitHub', icon: <Github size={22} />, url: 'https://github.com/Y-Udayanga', color: '#00f0ff' },
+    { name: 'X', icon: <Twitter size={22} />, url: 'https://x.com/Y_Udayanga', color: '#1da1f2' },
+    { name: 'Instagram', icon: <Instagram size={22} />, url: 'https://www.instagram.com/y_udayanga', color: '#e1306c' },
+    { name: 'Facebook', icon: <Facebook size={22} />, url: 'https://www.facebook.com/yasindu.udayanga.9', color: '#1877f2' },
+    { name: 'WhatsApp', icon: <WhatsAppIcon />, url: 'https://wa.me/94773826084', color: '#25d366' },
+    { name: 'TikTok', icon: <TikTokIcon />, url: 'https://www.tiktok.com/@y_udayanga', color: '#f637ec' },
+    { name: 'YouTube', icon: <Youtube size={22} />, url: 'https://www.youtube.com/@y_udayanga', color: '#ff0000' },
 ];
 
 const containerVariants = {
