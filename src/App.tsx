@@ -15,6 +15,8 @@ import Contact from './pages/Contact';
 
 import './App.css';
 
+import { client } from './lib/appwrite';
+
 // Component to handle exit animations on route change
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -38,6 +40,9 @@ function App() {
 
   // Fallback timeout just in case animation doesn't complete
   useEffect(() => {
+    // Ping Appwrite server to verify setup
+    client.ping().catch(console.error);
+
     const timer = setTimeout(() => {
       setLoading(false);
     }, 12000);

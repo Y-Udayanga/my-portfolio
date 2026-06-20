@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
     Facebook,
     Instagram,
@@ -7,7 +8,11 @@ import {
     Twitter,
     Youtube,
     Send,
+    CheckCircle,
+    AlertCircle
 } from 'lucide-react';
+import { ID } from 'appwrite';
+import { databases, APPWRITE_DATABASE_ID, APPWRITE_MESSAGES_COL_ID } from '../lib/appwrite';
 import PageTransition from '../components/PageTransition';
 import './Contact.css';
 
@@ -46,12 +51,54 @@ const containerVariants = {
     }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
     hidden: { opacity: 0, scale: 0.8, y: 20 },
     show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 15 } }
 };
 
 const Contact = () => {
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData(prev => ({ ...prev, [e.target.id.replace('contact-', '')]: e.target.value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!formData.name || !formData.email || !formData.message) return;
+        
+        setStatus('submitting');
+        
+        try {
+            await databases.createDocument(
+                APPWRITE_DATABASE_ID,
+                APPWRITE_MESSAGES_COL_ID,
+                ID.unique(),
+                {
+                    name: formData.name,
+                    email: formData.email,
+                    message: formData.message
+                }
+            );
+            
+            setStatus('success');
+            setFormData({ name: '', email: '', message: '' });
+            
+            // Reset success message after a few seconds
+            setTimeout(() => setStatus('idle'), 5000);
+            
+        } catch (error: any) {
+            console.error('Failed to submit message:', error);
+            setStatus('error');
+            setErrorMessage(error.message || 'Something went wrong. Please try again later.');
+            
+            setTimeout(() => setStatus('idle'), 6000);
+        }
+    };
+
     return (
         <PageTransition>
             <div className="contact-container container">
@@ -131,29 +178,88 @@ const Contact = () => {
                     >
                         <div className="contact-form-border" />
                         <div className="contact-form-inner">
-                            <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+                            <form className="contact-form" onSubmit={handleSubmit}>
                                 <h2 className="heading-3 mb-6">Send me a message</h2>
 
                                 <div className="form-group">
-                                    <input type="text" id="contact-name" className="form-input" placeholder="Your Name" required />
+                                    <input 
+                                        type="text" 
+                                        id="contact-name" 
+                                        className="form-input" 
+                                        placeholder="Your Name" 
+                                        required 
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        disabled={status === 'submitting'}
+                                    />
                                     <label htmlFor="contact-name" className="form-label font-mono">Name</label>
                                     <div className="form-glow" />
                                 </div>
 
                                 <div className="form-group">
-                                    <input type="email" id="contact-email" className="form-input" placeholder="Your Email" required />
+                                    <input 
+                                        type="email" 
+                                        id="contact-email" 
+                                        className="form-input" 
+                                        placeholder="Your Email" 
+                                        required 
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        disabled={status === 'submitting'}
+                                    />
                                     <label htmlFor="contact-email" className="form-label font-mono">Email</label>
                                     <div className="form-glow" />
                                 </div>
 
                                 <div className="form-group">
-                                    <textarea id="contact-message" className="form-input form-textarea" placeholder="Your Message" rows={4} required></textarea>
+                                    <textarea 
+                                        id="contact-message" 
+                                        className="form-input form-textarea" 
+                                        placeholder="Your Message" 
+                                        rows={4} 
+                                        required
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        disabled={status === 'submitting'}
+                                    ></textarea>
                                     <label htmlFor="contact-message" className="form-label font-mono">Message</label>
                                     <div className="form-glow" />
                                 </div>
 
-                                <button type="submit" className="btn btn-primary submit-btn">
-                                    Send Message <Send size={16} />
+                                <AnimatePresence>
+                                    {status === 'success' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: -10 }} 
+                                            animate={{ opacity: 1, y: 0 }} 
+                                            exit={{ opacity: 0 }}
+                                            className="success-message"
+                                            style={{ color: '#25d366', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
+                                        >
+                                            <CheckCircle size={18} />
+                                            <span>Message sent successfully! I'll get back to you soon.</span>
+                                        </motion.div>
+                                    )}
+                                    {status === 'error' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: -10 }} 
+                                            animate={{ opacity: 1, y: 0 }} 
+                                            exit={{ opacity: 0 }}
+                                            className="error-message"
+                                            style={{ color: '#ff4b4b', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
+                                        >
+                                            <AlertCircle size={18} />
+                                            <span>{errorMessage}</span>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <button 
+                                    type="submit" 
+                                    className="btn btn-primary submit-btn"
+                                    disabled={status === 'submitting'}
+                                >
+                                    {status === 'submitting' ? 'Sending...' : 'Send Message'} 
+                                    {status !== 'submitting' && <Send size={16} />}
                                 </button>
                             </form>
                         </div>
