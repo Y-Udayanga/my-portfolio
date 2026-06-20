@@ -22,6 +22,7 @@ import Dashboard from './pages/admin/Dashboard';
 import ManageProjects from './pages/admin/ManageProjects';
 import ManageCertificates from './pages/admin/ManageCertificates';
 import ViewMessages from './pages/admin/ViewMessages';
+import ManageContact from './pages/admin/ManageContact';
 
 import './App.css';
 
@@ -41,6 +42,7 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
           <Route path="projects" element={<ManageProjects />} />
           <Route path="certificates" element={<ManageCertificates />} />
           <Route path="messages" element={<ViewMessages />} />
+          <Route path="contact" element={<ManageContact />} />
         </Route>
       </Routes>
     );

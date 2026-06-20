@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FolderKanban, Award, Mail, LogOut, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Award, Mail, LogOut, ExternalLink, Menu, X, UserCog } from 'lucide-react';
 import './AdminLayout.css';
 
 export default function AdminLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleLogout = async () => {
         try {
@@ -22,6 +24,7 @@ export default function AdminLayout() {
         { path: '/admin/projects', label: 'Projects', icon: FolderKanban, exact: false },
         { path: '/admin/certificates', label: 'Certificates', icon: Award, exact: false },
         { path: '/admin/messages', label: 'Messages', icon: Mail, exact: false },
+        { path: '/admin/contact', label: 'Contact Details', icon: UserCog, exact: false },
     ];
 
     const isActive = (item: typeof navItems[0]) => {
@@ -33,12 +36,26 @@ export default function AdminLayout() {
 
     return (
         <div className="admin-layout">
-            <aside className="admin-sidebar">
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="admin-sidebar-overlay" 
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="admin-sidebar-header">
                     <div className="admin-logo">
                         <span className="logo-glow"></span>
                         <h2>Admin Portal</h2>
                     </div>
+                    <button 
+                        className="mobile-close-btn"
+                        onClick={() => setIsSidebarOpen(false)}
+                    >
+                        <X size={24} />
+                    </button>
                     {user && (
                         <div className="admin-user-info">
                             <span className="user-avatar">{user.email[0].toUpperCase()}</span>
@@ -56,6 +73,7 @@ export default function AdminLayout() {
                                 key={item.path}
                                 to={item.path}
                                 className={`admin-nav-item ${active ? 'active' : ''}`}
+                                onClick={() => setIsSidebarOpen(false)}
                             >
                                 <Icon size={20} className="nav-icon" />
                                 <span>{item.label}</span>
@@ -78,15 +96,24 @@ export default function AdminLayout() {
 
             <main className="admin-content-wrapper">
                 <div className="admin-topbar">
-                    <h1 className="admin-page-title">
-                        {location.pathname === '/admin' && 'Dashboard Overview'}
-                        {location.pathname.startsWith('/admin/projects') && 'Manage Projects'}
-                        {location.pathname.startsWith('/admin/certificates') && 'Manage Certificates'}
-                        {location.pathname.startsWith('/admin/messages') && 'Inbox Messages'}
-                    </h1>
+                    <div className="admin-topbar-left">
+                        <button 
+                            className="mobile-menu-btn"
+                            onClick={() => setIsSidebarOpen(true)}
+                        >
+                            <Menu size={24} />
+                        </button>
+                        <h1 className="admin-page-title">
+                            {location.pathname === '/admin' && 'Dashboard'}
+                            {location.pathname.startsWith('/admin/projects') && 'Projects'}
+                            {location.pathname.startsWith('/admin/certificates') && 'Certificates'}
+                            {location.pathname.startsWith('/admin/messages') && 'Messages'}
+                            {location.pathname.startsWith('/admin/contact') && 'Contact Info'}
+                        </h1>
+                    </div>
                     <div className="admin-system-status">
                         <span className="status-dot online"></span>
-                        <span className="status-text">Appwrite connected</span>
+                        <span className="status-text hidden-mobile">Appwrite connected</span>
                     </div>
                 </div>
                 <div className="admin-main-content">

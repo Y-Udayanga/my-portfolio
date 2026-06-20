@@ -29,7 +29,9 @@ export default function ViewMessages() {
             );
             const docs = response.documents as unknown as Message[];
             setMessages(docs);
-            if (docs.length > 0) {
+            
+            // Only auto-select first message on desktop
+            if (docs.length > 0 && window.innerWidth > 768) {
                 setSelectedMsgId(docs[0].$id);
             }
         } catch (err: any) {
@@ -42,7 +44,16 @@ export default function ViewMessages() {
 
     useEffect(() => {
         fetchMessages();
-    }, []);
+        
+        // Handle resize to show/hide panes correctly
+        const handleResize = () => {
+            if (window.innerWidth > 768 && !selectedMsgId && messages.length > 0) {
+                setSelectedMsgId(messages[0].$id);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [messages, selectedMsgId]);
 
     const selectedMessage = messages.find(m => m.$id === selectedMsgId);
 
@@ -112,7 +123,7 @@ export default function ViewMessages() {
                     <p>When visitors fill out your contact form, their submissions will appear here.</p>
                 </div>
             ) : (
-                <div className="inbox-container">
+                <div className={`inbox-container ${selectedMsgId ? 'message-selected' : ''}`}>
                     <div className="inbox-sidebar">
                         <div className="inbox-sidebar-header">
                             <span>{messages.length} messages</span>
@@ -140,6 +151,13 @@ export default function ViewMessages() {
                         {selectedMessage ? (
                             <div className="message-detail">
                                 <div className="detail-header">
+                                    <button 
+                                        className="mobile-back-btn" 
+                                        onClick={() => setSelectedMsgId(null)}
+                                    >
+                                        <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
+                                        <span>Back</span>
+                                    </button>
                                     <div className="sender-avatar-large">
                                         {selectedMessage.name[0].toUpperCase()}
                                     </div>

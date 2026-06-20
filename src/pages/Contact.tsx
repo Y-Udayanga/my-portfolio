@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
     Facebook,
@@ -13,7 +13,7 @@ import {
     Mail
 } from 'lucide-react';
 import { ID } from 'appwrite';
-import { databases, APPWRITE_DATABASE_ID, APPWRITE_MESSAGES_COL_ID } from '../lib/appwrite';
+import { databases, APPWRITE_DATABASE_ID, APPWRITE_MESSAGES_COL_ID, APPWRITE_CONTACT_COL_ID } from '../lib/appwrite';
 import PageTransition from '../components/PageTransition';
 import './Contact.css';
 
@@ -62,6 +62,33 @@ const Contact = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
+    const [dynamicLinks, setDynamicLinks] = useState(socialLinks);
+
+    useEffect(() => {
+        const fetchContact = async () => {
+            try {
+                const response = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_CONTACT_COL_ID);
+                if (response.documents.length > 0) {
+                    const data = response.documents[0];
+                    const updatedLinks = socialLinks.map(link => {
+                        let url = link.url;
+                        if (link.name === 'Email' && data.email) url = `mailto:${data.email}`;
+                        if (link.name === 'LinkedIn' && data.linkedin) url = data.linkedin;
+                        if (link.name === 'GitHub' && data.github) url = data.github;
+                        if (link.name === 'X' && data.twitter) url = data.twitter;
+                        if (link.name === 'Instagram' && data.instagram) url = data.instagram;
+                        if (link.name === 'Facebook' && data.facebook) url = data.facebook;
+                        if (link.name === 'WhatsApp' && data.phone) url = `https://wa.me/${data.phone.replace(/[^0-9]/g, '')}`;
+                        return { ...link, url };
+                    });
+                    setDynamicLinks(updatedLinks);
+                }
+            } catch (err) {
+                console.error("Failed to fetch contact details", err);
+            }
+        };
+        fetchContact();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.id.replace('contact-', '')]: e.target.value }));
@@ -148,7 +175,7 @@ const Contact = () => {
                                 initial="hidden"
                                 animate="show"
                             >
-                                {socialLinks.map((social) => (
+                                {dynamicLinks.map((social) => (
                                     <motion.a
                                         key={social.name}
                                         href={social.url}

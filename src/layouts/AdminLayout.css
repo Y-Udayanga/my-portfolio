@@ -63,6 +63,7 @@
   letter-spacing: 0.05em;
   background: linear-gradient(135deg, #fff 0%, var(--admin-text-muted) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
 }
@@ -229,6 +230,48 @@
   box-sizing: border-box;
 }
 
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--admin-text);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  position: absolute;
+  top: 24px;
+  right: 16px;
+}
+
+.admin-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+}
+
+.admin-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 @media (max-width: 992px) {
   .admin-sidebar {
     width: 80px;
@@ -256,5 +299,67 @@
   }
   .admin-main-content {
     padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    width: 260px;
+    padding: 24px 16px;
+    align-items: stretch;
+    transition: transform 0.3s ease;
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-close-btn {
+    display: block;
+  }
+
+  .admin-sidebar-overlay {
+    display: block;
+  }
+
+  .admin-logo h2,
+  .admin-user-info .user-email,
+  .admin-nav-item span {
+    display: block;
+  }
+
+  .admin-nav-item {
+    justify-content: flex-start;
+    padding: 12px 16px;
+  }
+
+  .admin-user-info {
+    justify-content: flex-start;
+    padding: 12px;
+  }
+
+  .admin-content-wrapper {
+    margin-left: 0;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .hidden-mobile {
+    display: none;
+  }
+
+  .admin-topbar {
+    padding: 16px;
+  }
+
+  .admin-page-title {
+    font-size: 18px;
+  }
+
+  .admin-main-content {
+    padding: 16px;
   }
 }
