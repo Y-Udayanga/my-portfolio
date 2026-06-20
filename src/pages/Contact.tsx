@@ -36,11 +36,11 @@ const socialLinks = [
     { name: 'LinkedIn', icon: <Linkedin size={22} />, url: 'https://www.linkedin.com/in/yasindu-udayanga', color: '#0077b5' },
     { name: 'GitHub', icon: <Github size={22} />, url: 'https://github.com/Y-Udayanga', color: '#00f0ff' },
     { name: 'X', icon: <Twitter size={22} />, url: 'https://x.com/Y_Udayanga', color: '#1da1f2' },
-    { name: 'Instagram', icon: <Instagram size={22} />, url: 'https://www.instagram.com/y_udayanga', color: '#e1306c' },
-    { name: 'Facebook', icon: <Facebook size={22} />, url: 'https://www.facebook.com/yasindu.udayanga.9', color: '#1877f2' },
-    { name: 'WhatsApp', icon: <WhatsAppIcon />, url: 'https://wa.me/94773826084', color: '#25d366' },
-    { name: 'TikTok', icon: <TikTokIcon />, url: 'https://www.tiktok.com/@y_udayanga', color: '#f637ec' },
-    { name: 'YouTube', icon: <Youtube size={22} />, url: 'https://www.youtube.com/@y_udayanga', color: '#ff0000' },
+    { name: 'Instagram', icon: <Instagram size={22} />, url: 'https://www.instagram.com/', color: '#e1306c' },
+    { name: 'Facebook', icon: <Facebook size={22} />, url: 'https://www.facebook.com/', color: '#1877f2' },
+    { name: 'WhatsApp', icon: <WhatsAppIcon />, url: '', color: '#25d366' },
+    { name: 'TikTok', icon: <TikTokIcon />, url: '', color: '#f637ec' },
+    { name: 'YouTube', icon: <Youtube size={22} />, url: '', color: '#ff0000' },
 ];
 
 const containerVariants = {
@@ -69,11 +69,11 @@ const Contact = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!formData.name || !formData.email || !formData.message) return;
-        
+
         setStatus('submitting');
-        
+
         try {
             await databases.createDocument(
                 APPWRITE_DATABASE_ID,
@@ -85,18 +85,18 @@ const Contact = () => {
                     message: formData.message
                 }
             );
-            
+
             setStatus('success');
             setFormData({ name: '', email: '', message: '' });
-            
+
             // Reset success message after a few seconds
             setTimeout(() => setStatus('idle'), 5000);
-            
+
         } catch (error: any) {
             console.error('Failed to submit message:', error);
             setStatus('error');
             setErrorMessage(error.message || 'Something went wrong. Please try again later.');
-            
+
             setTimeout(() => setStatus('idle'), 6000);
         }
     };
@@ -184,12 +184,12 @@ const Contact = () => {
                                 <h2 className="heading-3 mb-6">Send me a message</h2>
 
                                 <div className="form-group">
-                                    <input 
-                                        type="text" 
-                                        id="contact-name" 
-                                        className="form-input" 
-                                        placeholder="Your Name" 
-                                        required 
+                                    <input
+                                        type="text"
+                                        id="contact-name"
+                                        className="form-input"
+                                        placeholder="Your Name"
+                                        required
                                         value={formData.name}
                                         onChange={handleChange}
                                         disabled={status === 'submitting'}
@@ -199,12 +199,12 @@ const Contact = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <input 
-                                        type="email" 
-                                        id="contact-email" 
-                                        className="form-input" 
-                                        placeholder="Your Email" 
-                                        required 
+                                    <input
+                                        type="email"
+                                        id="contact-email"
+                                        className="form-input"
+                                        placeholder="Your Email"
+                                        required
                                         value={formData.email}
                                         onChange={handleChange}
                                         disabled={status === 'submitting'}
@@ -214,11 +214,11 @@ const Contact = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <textarea 
-                                        id="contact-message" 
-                                        className="form-input form-textarea" 
-                                        placeholder="Your Message" 
-                                        rows={4} 
+                                    <textarea
+                                        id="contact-message"
+                                        className="form-input form-textarea"
+                                        placeholder="Your Message"
+                                        rows={4}
                                         required
                                         value={formData.message}
                                         onChange={handleChange}
@@ -230,9 +230,9 @@ const Contact = () => {
 
                                 <AnimatePresence>
                                     {status === 'success' && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: -10 }} 
-                                            animate={{ opacity: 1, y: 0 }} 
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0 }}
                                             className="success-message"
                                             style={{ color: '#25d366', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
@@ -242,9 +242,9 @@ const Contact = () => {
                                         </motion.div>
                                     )}
                                     {status === 'error' && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: -10 }} 
-                                            animate={{ opacity: 1, y: 0 }} 
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0 }}
                                             className="error-message"
                                             style={{ color: '#ff4b4b', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
@@ -255,12 +255,12 @@ const Contact = () => {
                                     )}
                                 </AnimatePresence>
 
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn btn-primary submit-btn"
                                     disabled={status === 'submitting'}
                                 >
-                                    {status === 'submitting' ? 'Sending...' : 'Send Message'} 
+                                    {status === 'submitting' ? 'Sending...' : 'Send Message'}
                                     {status !== 'submitting' && <Send size={16} />}
                                 </button>
                             </form>
