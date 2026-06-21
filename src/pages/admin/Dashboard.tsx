@@ -47,9 +47,11 @@ export default function Dashboard() {
                 const messagesResponse = await databases.listDocuments(
                     APPWRITE_DATABASE_ID,
                     APPWRITE_MESSAGES_COL_ID,
-                    [Query.orderDesc('$createdAt'), Query.limit(3)]
+                    [Query.limit(100)]
                 );
-                setMessages(messagesResponse.documents as unknown as Message[]);
+                const docs = messagesResponse.documents as unknown as Message[];
+                docs.sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime());
+                setMessages(docs.slice(0, 3));
                 setMsgCount(messagesResponse.total);
 
             } catch (err: any) {
@@ -140,22 +142,22 @@ export default function Dashboard() {
                             </div>
                         ) : (
                             messages.map((msg) => (
-                                <div key={msg.$id} className="dashboard-message-card">
-                                    <div className="message-header">
-                                        <div className="sender-details">
-                                            <span className="sender-avatar">{msg.name[0].toUpperCase()}</span>
-                                            <div>
+                                <Link to={`/admin/messages`} key={msg.$id} className="dashboard-message-card">
+                                    <div className="message-card-inner">
+                                        <div className="sender-avatar">{msg.name[0].toUpperCase()}</div>
+                                        <div className="message-content-preview">
+                                            <div className="message-header">
                                                 <h4>{msg.name}</h4>
-                                                <span className="sender-email">{msg.email}</span>
+                                                <div className="message-time">
+                                                    <Clock size={12} />
+                                                    <span>{formatDate(msg.$createdAt)}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="message-time">
-                                            <Clock size={12} />
-                                            <span>{formatDate(msg.$createdAt)}</span>
+                                            <span className="sender-email">{msg.email}</span>
+                                            <p className="message-snippet">{msg.message}</p>
                                         </div>
                                     </div>
-                                    <p className="message-snippet">{msg.message}</p>
-                                </div>
+                                </Link>
                             ))
                         )}
                     </div>

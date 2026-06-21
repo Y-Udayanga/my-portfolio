@@ -25,9 +25,10 @@ export default function ViewMessages() {
             const response = await databases.listDocuments(
                 APPWRITE_DATABASE_ID,
                 APPWRITE_MESSAGES_COL_ID,
-                [Query.orderDesc('$createdAt')]
+                [Query.limit(100)]
             );
             const docs = response.documents as unknown as Message[];
+            docs.sort((a, b) => new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime());
             setMessages(docs);
             
             // Only auto-select first message on desktop
