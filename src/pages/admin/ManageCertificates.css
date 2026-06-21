@@ -197,6 +197,42 @@
   background: var(--admin-primary-glow);
 }
 
+.modal-form input:focus,
+.modal-form textarea:focus,
+.modal-form select:focus {
+  border-color: var(--admin-primary);
+  background: #1a1c25;
+  box-shadow: 0 0 0 3px var(--admin-primary-glow);
+}
+
+.modal-form input[type="file"] {
+  padding: 8px;
+  cursor: pointer;
+  color: var(--admin-text-muted);
+}
+
+.modal-form input[type="file"]::-webkit-file-upload-button,
+.modal-form input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 6px 16px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 6px;
+  color: var(--admin-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-form input[type="file"]::-webkit-file-upload-button:hover,
+.modal-form input[type="file"]::file-selector-button:hover {
+  background: var(--admin-primary);
+  color: #fff;
+  border-color: var(--admin-primary);
+}
+
 .btn-delete:hover {
   border-color: var(--admin-danger);
   color: #fff;
