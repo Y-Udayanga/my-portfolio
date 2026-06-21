@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { databases, APPWRITE_DATABASE_ID, APPWRITE_CERTIFICATES_COL_ID } from '../../lib/appwrite';
+import { databases, storage, APPWRITE_DATABASE_ID, APPWRITE_CERTIFICATES_COL_ID, APPWRITE_STORAGE_BUCKET_ID } from '../../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { Plus, Edit2, Trash2, X, ExternalLink, Loader2, Award } from 'lucide-react';
 import './ManageCertificates.css';
@@ -29,6 +29,7 @@ export default function ManageCertificates() {
     const [formExpiry, setFormExpiry] = useState('');
     const [formDesc, setFormDesc] = useState('');
     const [formImage, setFormImage] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formLink, setFormLink] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export default function ManageCertificates() {
         setFormExpiry('');
         setFormDesc('');
         setFormImage('');
+        setImageFile(null);
         setFormLink('');
         setFormError(null);
         setIsModalOpen(true);
@@ -75,6 +77,7 @@ export default function ManageCertificates() {
         setFormExpiry(cert.expiry || '');
         setFormDesc(cert.description);
         setFormImage(cert.image);
+        setImageFile(null);
         setFormLink(cert.link);
         setFormError(null);
         setIsModalOpen(true);
@@ -100,17 +103,28 @@ export default function ManageCertificates() {
         setFormError(null);
         setSubmitting(true);
 
-        const certData = {
-            title: formTitle,
-            issuer: formIssuer,
-            date: formDate,
-            expiry: formExpiry || 'None',
-            description: formDesc,
-            image: formImage,
-            link: formLink
-        };
+        let finalImageUrl = formImage;
 
         try {
+            if (imageFile) {
+                const uploadedFile = await storage.createFile(
+                    APPWRITE_STORAGE_BUCKET_ID,
+                    ID.unique(),
+                    imageFile
+                );
+                finalImageUrl = storage.getFileView(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id).toString();
+            }
+
+            const certData = {
+                title: formTitle,
+                issuer: formIssuer,
+                date: formDate,
+                expiry: formExpiry || 'None',
+                description: formDesc,
+                image: finalImageUrl,
+                link: formLink
+            };
+
             if (editingCert) {
                 // Update
                 const response = await databases.updateDocument(
@@ -282,14 +296,33 @@ export default function ManageCertificates() {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="cert-image">Badge/Certificate Image URL</label>
+                                <label htmlFor="cert-image-file">Upload Badge/Certificate Image</label>
+                                <input
+                                    type="file"
+                                    id="cert-image-file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            setImageFile(e.target.files[0]);
+                                            setFormImage('');
+                                        }
+                                    }}
+                                    disabled={submitting}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="cert-image">Or Image URL</label>
                                 <input
                                     type="url"
                                     id="cert-image"
                                     value={formImage}
-                                    onChange={(e) => setFormImage(e.target.value)}
+                                    onChange={(e) => {
+                                        setFormImage(e.target.value);
+                                        setImageFile(null);
+                                    }}
                                     placeholder="https://images.unsplash.com/..."
-                                    required
+                                    required={!imageFile && !formImage}
                                     disabled={submitting}
                                 />
                             </div>

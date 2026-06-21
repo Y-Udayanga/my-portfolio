@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { databases, APPWRITE_DATABASE_ID, APPWRITE_PROJECTS_COL_ID } from '../../lib/appwrite';
+import { databases, storage, APPWRITE_DATABASE_ID, APPWRITE_PROJECTS_COL_ID, APPWRITE_STORAGE_BUCKET_ID } from '../../lib/appwrite';
 import { ID, Query } from 'appwrite';
 import { Plus, Edit2, Trash2, X, ExternalLink, Loader2 } from 'lucide-react';
 import './ManageProjects.css';
@@ -24,6 +24,7 @@ export default function ManageProjects() {
     const [formTitle, setFormTitle] = useState('');
     const [formDesc, setFormDesc] = useState('');
     const [formImage, setFormImage] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formLink, setFormLink] = useState('');
     const [formTags, setFormTags] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -66,6 +67,7 @@ export default function ManageProjects() {
         setFormTitle(project.title);
         setFormDesc(project.description);
         setFormImage(project.image);
+        setImageFile(null);
         setFormLink(project.link);
         setFormTags(project.tags ? project.tags.join(', ') : '');
         setFormError(null);
@@ -96,15 +98,26 @@ export default function ManageProjects() {
             ? formTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
             : [];
 
-        const projectData = {
-            title: formTitle,
-            description: formDesc,
-            image: formImage,
-            link: formLink,
-            tags: tagsArray
-        };
+        let finalImageUrl = formImage;
 
         try {
+            if (imageFile) {
+                const uploadedFile = await storage.createFile(
+                    APPWRITE_STORAGE_BUCKET_ID,
+                    ID.unique(),
+                    imageFile
+                );
+                finalImageUrl = storage.getFileView(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id).toString();
+            }
+
+            const projectData = {
+                title: formTitle,
+                description: formDesc,
+                image: finalImageUrl,
+                link: formLink,
+                tags: tagsArray
+            };
+
             if (editingProject) {
                 // Update
                 const response = await databases.updateDocument(
@@ -230,14 +243,33 @@ export default function ManageProjects() {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="proj-image">Image URL</label>
+                                <label htmlFor="proj-image-file">Upload Image</label>
+                                <input
+                                    type="file"
+                                    id="proj-image-file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            setImageFile(e.target.files[0]);
+                                            setFormImage('');
+                                        }
+                                    }}
+                                    disabled={submitting}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="proj-image">Or Image URL</label>
                                 <input
                                     type="url"
                                     id="proj-image"
                                     value={formImage}
-                                    onChange={(e) => setFormImage(e.target.value)}
+                                    onChange={(e) => {
+                                        setFormImage(e.target.value);
+                                        setImageFile(null);
+                                    }}
                                     placeholder="https://images.unsplash.com/..."
-                                    required
+                                    required={!imageFile && !formImage}
                                     disabled={submitting}
                                 />
                             </div>

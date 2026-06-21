@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { databases, APPWRITE_DATABASE_ID, APPWRITE_CONTACT_COL_ID } from '../../lib/appwrite';
-import { Loader2, Save, UserCog } from 'lucide-react';
+import { Loader2, Save, UserCog, Mail, Phone, MapPin, Github, Linkedin, Twitter, Instagram, Facebook } from 'lucide-react';
 import './ManageContact.css';
 
 interface ContactInfo {
@@ -133,93 +133,117 @@ export default function ManageContact() {
                         <div className="form-row-2">
                             <div className="form-group">
                                 <label>Email Address</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="your.email@example.com"
-                                />
+                                <div className="input-with-icon">
+                                    <Mail className="input-icon" size={18} />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="your.email@example.com"
+                                    />
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>Phone Number / WhatsApp</label>
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    placeholder="+1 234 567 890"
-                                />
+                                <div className="input-with-icon">
+                                    <Phone className="input-icon" size={18} />
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder="+1 234 567 890"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="form-group">
                             <label>Location</label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleChange}
-                                placeholder="City, Country"
-                            />
+                            <div className="input-with-icon">
+                                <MapPin className="input-icon" size={18} />
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleChange}
+                                    placeholder="City, Country"
+                                />
+                            </div>
                         </div>
 
                         <div className="form-section-title mt-4">Social Links</div>
                         <div className="form-row-2">
                             <div className="form-group">
                                 <label>GitHub URL</label>
-                                <input
-                                    type="url"
-                                    name="github"
-                                    value={formData.github}
-                                    onChange={handleChange}
-                                    placeholder="https://github.com/username"
-                                />
+                                <div className="input-with-icon">
+                                    <Github className="input-icon" size={18} />
+                                    <input
+                                        type="url"
+                                        name="github"
+                                        value={formData.github}
+                                        onChange={handleChange}
+                                        placeholder="https://github.com/username"
+                                    />
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>LinkedIn URL</label>
-                                <input
-                                    type="url"
-                                    name="linkedin"
-                                    value={formData.linkedin}
-                                    onChange={handleChange}
-                                    placeholder="https://linkedin.com/in/username"
-                                />
+                                <div className="input-with-icon">
+                                    <Linkedin className="input-icon" size={18} />
+                                    <input
+                                        type="url"
+                                        name="linkedin"
+                                        value={formData.linkedin}
+                                        onChange={handleChange}
+                                        placeholder="https://linkedin.com/in/username"
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div className="form-row-2">
                             <div className="form-group">
                                 <label>X (Twitter) URL</label>
-                                <input
-                                    type="url"
-                                    name="twitter"
-                                    value={formData.twitter}
-                                    onChange={handleChange}
-                                    placeholder="https://x.com/username"
-                                />
+                                <div className="input-with-icon">
+                                    <Twitter className="input-icon" size={18} />
+                                    <input
+                                        type="url"
+                                        name="twitter"
+                                        value={formData.twitter}
+                                        onChange={handleChange}
+                                        placeholder="https://x.com/username"
+                                    />
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>Instagram URL</label>
-                                <input
-                                    type="url"
-                                    name="instagram"
-                                    value={formData.instagram}
-                                    onChange={handleChange}
-                                    placeholder="https://instagram.com/username"
-                                />
+                                <div className="input-with-icon">
+                                    <Instagram className="input-icon" size={18} />
+                                    <input
+                                        type="url"
+                                        name="instagram"
+                                        value={formData.instagram}
+                                        onChange={handleChange}
+                                        placeholder="https://instagram.com/username"
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div className="form-row-2">
                             <div className="form-group">
                                 <label>Facebook URL</label>
-                                <input
-                                    type="url"
-                                    name="facebook"
-                                    value={formData.facebook}
-                                    onChange={handleChange}
-                                    placeholder="https://facebook.com/username"
-                                />
+                                <div className="input-with-icon">
+                                    <Facebook className="input-icon" size={18} />
+                                    <input
+                                        type="url"
+                                        name="facebook"
+                                        value={formData.facebook}
+                                        onChange={handleChange}
+                                        placeholder="https://facebook.com/username"
+                                    />
+                                </div>
                             </div>
                         </div>
 
