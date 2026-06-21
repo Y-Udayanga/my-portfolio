@@ -45,7 +45,9 @@ export default function ViewMessages() {
 
     useEffect(() => {
         fetchMessages();
-        
+    }, []);
+
+    useEffect(() => {
         // Handle resize to show/hide panes correctly
         const handleResize = () => {
             if (window.innerWidth > 768 && !selectedMsgId && messages.length > 0) {
