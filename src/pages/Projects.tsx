@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, Loader2, X } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
+import ImageCarousel from '../components/ImageCarousel';
 import { databases, APPWRITE_DATABASE_ID, APPWRITE_PROJECTS_COL_ID } from '../lib/appwrite';
 import './Projects.css';
 
@@ -10,6 +11,7 @@ interface Project {
     title: string;
     description: string;
     image: string;
+    images?: string[];
     tags: string[];
     link: string;
 }
@@ -57,6 +59,7 @@ const itemVariants = {
 };
 
 const Projects = () => {
+    const [selectedProject, setSelectedProject] = useState<string | null>(null);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -145,15 +148,68 @@ const Projects = () => {
                                             ))}
                                         </div>
 
-                                        <a href={project.link} target="_blank" rel="noreferrer" className="btn btn-outline more-details-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
+                                        <button onClick={() => setSelectedProject(project.$id)} className="btn btn-outline more-details-btn" style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
                                             More Details
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </motion.div>
                         ))}
                     </motion.div>
                 )}
+
+                {/* Modal for Project Details */}
+                <AnimatePresence>
+                    {selectedProject && (
+                        <motion.div
+                            className="modal-overlay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <div className="modal-backdrop" onClick={() => setSelectedProject(null)} />
+
+                            {projects.filter(p => p.$id === selectedProject).map(project => (
+                                <motion.div
+                                    key={project.$id}
+                                    className="modal-content"
+                                    initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                                    animate={{ scale: 1, y: 0, opacity: 1 }}
+                                    exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                                >
+                                    <div className="modal-border" />
+                                    <div className="modal-inner">
+                                        <button className="close-modal-btn" onClick={() => setSelectedProject(null)}>
+                                            <X size={20} />
+                                        </button>
+
+                                        {project.images && project.images.length > 0 ? (
+                                            <ImageCarousel images={project.images} altText={project.title} />
+                                        ) : (
+                                            <img src={project.image} alt={project.title} className="modal-image" />
+                                        )}
+
+                                        <div className="modal-details">
+                                            <h2 className="heading-3" style={{ marginBottom: '1rem' }}>{project.title}</h2>
+                                            
+                                            <div className="project-tags" style={{ marginBottom: '1.5rem' }}>
+                                                {project.tags && project.tags.map(tag => (
+                                                    <span key={tag} className="tag font-mono">{tag}</span>
+                                                ))}
+                                            </div>
+
+                                            <p className="modal-desc">{project.description}</p>
+
+                                            <a href={project.link} className="btn btn-primary validation-btn" target="_blank" rel="noreferrer">
+                                                View Live Project <ExternalLink size={16} />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </PageTransition>
     );

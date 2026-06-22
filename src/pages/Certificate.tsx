@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Calendar, ExternalLink, X, Loader2 } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { databases, APPWRITE_DATABASE_ID, APPWRITE_CERTIFICATES_COL_ID } from '../lib/appwrite';
+import ImageCarousel from '../components/ImageCarousel';
 import './Certificate.css';
 
 interface Certificate {
@@ -13,6 +14,7 @@ interface Certificate {
     expiry: string;
     description: string;
     image: string;
+    images?: string[];
     link: string;
 }
 
@@ -147,7 +149,11 @@ const Certificate = () => {
                                             <X size={20} />
                                         </button>
 
-                                        <img src={cert.image} alt={cert.title} className="modal-image" />
+                                        {cert.images && cert.images.length > 0 ? (
+                                            <ImageCarousel images={cert.images} altText={cert.title} />
+                                        ) : (
+                                            <img src={cert.image} alt={cert.title} className="modal-image" />
+                                        )}
 
                                         <div className="modal-details">
                                             <h2 className="heading-3">{cert.title}</h2>

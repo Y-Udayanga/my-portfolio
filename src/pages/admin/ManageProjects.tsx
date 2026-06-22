@@ -9,6 +9,7 @@ interface Project {
     title: string;
     description: string;
     image: string;
+    images?: string[];
     tags: string[];
     link: string;
 }
@@ -24,7 +25,8 @@ export default function ManageProjects() {
     const [formTitle, setFormTitle] = useState('');
     const [formDesc, setFormDesc] = useState('');
     const [formImage, setFormImage] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [formImages, setFormImages] = useState<string[]>([]);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [formLink, setFormLink] = useState('');
     const [formTags, setFormTags] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -56,6 +58,8 @@ export default function ManageProjects() {
         setFormTitle('');
         setFormDesc('');
         setFormImage('');
+        setFormImages([]);
+        setImageFiles([]);
         setFormLink('');
         setFormTags('');
         setFormError(null);
@@ -67,7 +71,8 @@ export default function ManageProjects() {
         setFormTitle(project.title);
         setFormDesc(project.description);
         setFormImage(project.image);
-        setImageFile(null);
+        setFormImages(project.images || (project.image ? [project.image] : []));
+        setImageFiles([]);
         setFormLink(project.link);
         setFormTags(project.tags ? project.tags.join(', ') : '');
         setFormError(null);
@@ -99,21 +104,31 @@ export default function ManageProjects() {
             : [];
 
         let finalImageUrl = formImage;
+        const uploadedUrls: string[] = [];
 
         try {
-            if (imageFile) {
+            // Upload multiple files
+            for (const file of imageFiles) {
                 const uploadedFile = await storage.createFile(
                     APPWRITE_STORAGE_BUCKET_ID,
                     ID.unique(),
-                    imageFile
+                    file
                 );
-                finalImageUrl = storage.getFileView(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id).toString();
+                uploadedUrls.push(storage.getFileView(APPWRITE_STORAGE_BUCKET_ID, uploadedFile.$id).toString());
+            }
+
+            const finalImagesArray = [...formImages, ...uploadedUrls].filter(url => url.trim() !== '');
+            if (!finalImageUrl && finalImagesArray.length > 0) {
+                finalImageUrl = finalImagesArray[0];
+            } else if (finalImagesArray.length === 0 && finalImageUrl) {
+                finalImagesArray.push(finalImageUrl);
             }
 
             const projectData = {
                 title: formTitle,
                 description: formDesc,
                 image: finalImageUrl,
+                images: finalImagesArray,
                 link: formLink,
                 tags: tagsArray
             };
@@ -243,35 +258,69 @@ export default function ManageProjects() {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="proj-image-file">Upload Image</label>
+                                <label htmlFor="proj-image-file">Upload Images</label>
                                 <input
                                     type="file"
                                     id="proj-image-file"
                                     accept="image/*"
+                                    multiple
                                     onChange={(e) => {
-                                        if (e.target.files && e.target.files.length > 0) {
-                                            setImageFile(e.target.files[0]);
-                                            setFormImage('');
+                                        if (e.target.files) {
+                                            setImageFiles(Array.from(e.target.files));
+                                            if (e.target.files.length > 0 && !formImage) {
+                                                setFormImage('');
+                                            }
                                         }
                                     }}
                                     disabled={submitting}
                                 />
+                                {imageFiles.length > 0 && (
+                                    <div className="selected-files-list">
+                                        <p className="input-hint">{imageFiles.length} file(s) selected.</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="proj-image">Or Image URL</label>
-                                <input
-                                    type="url"
-                                    id="proj-image"
-                                    value={formImage}
-                                    onChange={(e) => {
-                                        setFormImage(e.target.value);
-                                        setImageFile(null);
-                                    }}
-                                    placeholder="https://images.unsplash.com/..."
-                                    required={!imageFile && !formImage}
+                                <label>Existing / External Image URLs</label>
+                                {formImages.map((url, idx) => (
+                                    <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                        <input
+                                            type="url"
+                                            value={url}
+                                            onChange={(e) => {
+                                                const newUrls = [...formImages];
+                                                newUrls[idx] = e.target.value;
+                                                setFormImages(newUrls);
+                                                if (idx === 0) setFormImage(e.target.value);
+                                            }}
+                                            placeholder="https://images.unsplash.com/..."
+                                            disabled={submitting}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn-delete"
+                                            style={{ padding: '8px', flexShrink: 0 }}
+                                            onClick={() => {
+                                                const newUrls = formImages.filter((_, i) => i !== idx);
+                                                setFormImages(newUrls);
+                                                if (idx === 0 && newUrls.length > 0) setFormImage(newUrls[0]);
+                                                else if (idx === 0) setFormImage('');
+                                            }}
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="btn-add-item"
+                                    style={{ padding: '6px 12px', fontSize: '14px', width: 'fit-content' }}
+                                    onClick={() => setFormImages([...formImages, ''])}
                                     disabled={submitting}
-                                />
+                                >
+                                    <Plus size={14} /> Add URL
+                                </button>
                             </div>
 
                             <div className="form-group">
