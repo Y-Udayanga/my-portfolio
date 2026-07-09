@@ -128,7 +128,6 @@ export default function ManageProjects() {
                 title: formTitle,
                 description: formDesc,
                 image: finalImageUrl,
-                images: finalImagesArray,
                 link: formLink,
                 tags: tagsArray
             };
