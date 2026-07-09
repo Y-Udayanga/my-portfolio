@@ -23,6 +23,7 @@ import ManageProjects from './pages/admin/ManageProjects';
 import ManageCertificates from './pages/admin/ManageCertificates';
 import ViewMessages from './pages/admin/ViewMessages';
 import ManageContact from './pages/admin/ManageContact';
+import ManageCV from './pages/admin/ManageCV';
 
 import './App.css';
 
@@ -43,6 +44,7 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
           <Route path="certificates" element={<ManageCertificates />} />
           <Route path="messages" element={<ViewMessages />} />
           <Route path="contact" element={<ManageContact />} />
+          <Route path="cv" element={<ManageCV />} />
         </Route>
       </Routes>
     );

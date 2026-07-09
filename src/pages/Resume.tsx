@@ -2,29 +2,38 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, FileText, CheckCircle } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
+import { storage, APPWRITE_STORAGE_BUCKET_ID } from '../lib/appwrite';
 import './Resume.css';
 
 const Resume = () => {
     const [isDownloading, setIsDownloading] = useState(false);
     const [isDownloaded, setIsDownloaded] = useState(false);
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         setIsDownloading(true);
 
-        // Simulate download delay for animation
-        setTimeout(() => {
+        try {
+            // Optional: verify the file exists first (throws 404 if not)
+            await storage.getFile(APPWRITE_STORAGE_BUCKET_ID, 'my-cv-pdf');
+            
+            // Generate the download URL
+            const result = storage.getFileDownload(APPWRITE_STORAGE_BUCKET_ID, 'my-cv-pdf');
+            
+            const link = document.createElement('a');
+            link.href = result.href; // result is a URL object
+            link.download = 'Yasindu_Udayanga_Resume.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
             setIsDownloading(false);
             setIsDownloaded(true);
-
-            // In a real app, this would trigger the actual file download
-            // const link = document.createElement('a');
-            // link.href = '/path-to-resume.pdf';
-            // link.download = 'Yasindu_Udayanga_Resume.pdf';
-            // link.click();
-
-            // Reset state after a few seconds
             setTimeout(() => setIsDownloaded(false), 3000);
-        }, 1500);
+        } catch (error) {
+            console.error('Error downloading CV:', error);
+            setIsDownloading(false);
+            alert('CV is currently unavailable. The admin may need to upload it first.');
+        }
     };
 
     return (

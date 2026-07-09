@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FolderKanban, Award, Mail, LogOut, ExternalLink, Menu, X, UserCog } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Award, Mail, LogOut, ExternalLink, Menu, X, UserCog, FileText } from 'lucide-react';
 import './AdminLayout.css';
 
 export default function AdminLayout() {
@@ -25,6 +25,7 @@ export default function AdminLayout() {
         { path: '/admin/certificates', label: 'Certificates', icon: Award, exact: false },
         { path: '/admin/messages', label: 'Messages', icon: Mail, exact: false },
         { path: '/admin/contact', label: 'Contact Details', icon: UserCog, exact: false },
+        { path: '/admin/cv', label: 'Manage CV', icon: FileText, exact: false },
     ];
 
     const isActive = (item: typeof navItems[0]) => {
