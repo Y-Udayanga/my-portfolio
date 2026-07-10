@@ -14,7 +14,7 @@ const bootLines = [
 ];
 
 const welcomeMessage =
-  "Welcome to my digital space. I'm Yasindu Udayanga — a Software Engineer crafting the future, one line of code at a time.";
+  "Welcome to my digital space. I'm Yasindu Udayanga, a FinOps Engineer focused on cloud value, clarity, and clean digital experiences.";
 
 const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
   const [phase, setPhase] = useState<'boot' | 'identity' | 'welcome' | 'enter'>('boot');
@@ -273,7 +273,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                   textTransform: 'uppercase',
                 }}
               >
-                Software Engineer · 2030
+                FinOps Engineer
               </motion.p>
             </motion.div>
           )}
@@ -396,7 +396,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
             textTransform: 'uppercase',
           }}
         >
-          SYS.V2030
+          PORTFOLIO
         </span>
         <div
           style={{

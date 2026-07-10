@@ -186,11 +186,11 @@
 
 .modal-overlay {
   position: fixed;
-  top: 0;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 2000;
+  z-index: 900;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,6 +211,7 @@
   position: relative;
   width: 100%;
   max-width: 600px;
+  max-height: calc(100vh - 80px - 2rem);
   border-radius: 1.25rem;
   overflow: hidden;
   z-index: 2001;
@@ -237,6 +238,8 @@
   border-radius: inherit;
   margin: 1px;
   overflow: hidden;
+  max-height: calc(100vh - 80px - 2.2rem);
+  overflow-y: auto;
 }
 
 .close-modal-btn {

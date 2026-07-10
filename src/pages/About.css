@@ -75,11 +75,19 @@
   overflow: hidden;
   position: relative;
   aspect-ratio: 4/5;
+  background: var(--bg-tertiary);
+}
+
+.about-image-wrapper picture {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .about-image {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
   transition: transform 0.5s ease;
   filter: saturate(0.85);
