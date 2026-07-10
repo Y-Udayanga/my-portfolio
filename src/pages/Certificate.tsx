@@ -145,7 +145,11 @@ const Certificate = () => {
                                 >
                                     <div className="modal-border" />
                                     <div className="modal-inner">
-                                        <button className="close-modal-btn" onClick={() => setSelectedCert(null)}>
+                                        <button
+                                            className="close-modal-btn"
+                                            onClick={() => setSelectedCert(null)}
+                                            aria-label="Close certificate details"
+                                        >
                                             <X size={20} />
                                         </button>
 

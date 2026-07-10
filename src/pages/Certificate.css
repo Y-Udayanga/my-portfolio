@@ -65,6 +65,7 @@
   border-radius: inherit;
   margin: 1px;
   padding: 2rem;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -92,11 +93,13 @@
 
 .cert-image-preview {
   width: 100%;
-  height: 120px;
-  object-fit: cover;
+  aspect-ratio: 16 / 10;
+  height: auto;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
-  opacity: 0.7;
+  opacity: 0.9;
   border: 1px solid rgba(0, 240, 255, 0.06);
   transition: opacity 0.3s ease;
 }
@@ -141,7 +144,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .modal-backdrop {
@@ -150,17 +153,19 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(5, 10, 24, 0.8);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 10, 24, 0.86);
+  backdrop-filter: blur(12px);
 }
 
 .modal-content {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  border-radius: 1.25rem;
+  max-width: 1080px;
+  max-height: calc(100vh - 3rem);
+  border-radius: 1rem;
   overflow: hidden;
   z-index: 2001;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
 }
 
 .modal-border {
@@ -184,6 +189,9 @@
   border-radius: inherit;
   margin: 1px;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+  max-height: calc(100vh - 3.2rem);
 }
 
 .close-modal-btn {
@@ -211,13 +219,40 @@
 
 .modal-image {
   width: 100%;
-  height: 220px;
-  object-fit: cover;
-  border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+  height: 100%;
+  min-height: 360px;
+  max-height: calc(100vh - 3.2rem);
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.96);
+  border-right: 1px solid rgba(0, 240, 255, 0.08);
+}
+
+.modal-inner .carousel-container,
+.modal-inner .carousel-single-image {
+  height: 100%;
+  margin-bottom: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-right: 1px solid rgba(0, 240, 255, 0.08);
+}
+
+.modal-inner .carousel-image-wrapper {
+  height: 100%;
+  min-height: 360px;
+  max-height: calc(100vh - 3.2rem);
+}
+
+.modal-inner .carousel-image,
+.modal-inner .carousel-single-image img {
+  width: 100%;
+  height: 100%;
+  max-height: calc(100vh - 3.2rem);
+  object-fit: contain;
 }
 
 .modal-details {
-  padding: 2.5rem;
+  padding: 3.25rem 2.5rem 2.5rem;
+  overflow-y: auto;
 }
 
 .modal-issuer {
@@ -239,6 +274,7 @@
 
 .modal-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 2rem;
   margin-bottom: 2rem;
   color: var(--text-tertiary);
@@ -263,7 +299,77 @@
   font-size: 0.8rem;
 }
 
+@media (max-width: 900px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  .modal-content {
+    max-height: none;
+  }
+
+  .modal-inner {
+    display: block;
+    max-height: none;
+  }
+
+  .modal-image {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+  }
+
+  .modal-inner .carousel-container,
+  .modal-inner .carousel-single-image {
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+  }
+
+  .modal-inner .carousel-image-wrapper {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 16 / 10;
+  }
+
+  .modal-inner .carousel-image,
+  .modal-inner .carousel-single-image img {
+    height: 100%;
+    max-height: none;
+  }
+
+  .modal-details {
+    padding: 2rem;
+  }
+}
+
 @media (max-width: 480px) {
+  .certificate-container {
+    padding-top: 2.5rem;
+  }
+
+  .cert-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cert-card-inner {
+    min-height: auto;
+    padding: 1.5rem;
+  }
+
+  .modal-overlay {
+    padding: 0.75rem;
+  }
+
+  .modal-details {
+    padding: 1.5rem;
+  }
+
   .modal-meta {
     flex-direction: column;
     gap: 1rem;
