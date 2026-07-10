@@ -186,15 +186,15 @@
 
 .modal-overlay {
   position: fixed;
-  top: 80px;
+  top: calc(80px + 1.25rem);
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 1rem;
   z-index: 900;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 0 1rem;
 }
 
 .modal-backdrop {
@@ -211,7 +211,7 @@
   position: relative;
   width: 100%;
   max-width: 600px;
-  max-height: calc(100vh - 80px - 2rem);
+  max-height: calc(100vh - 80px - 3.5rem);
   border-radius: 1.25rem;
   overflow: hidden;
   z-index: 2001;
@@ -238,7 +238,7 @@
   border-radius: inherit;
   margin: 1px;
   overflow: hidden;
-  max-height: calc(100vh - 80px - 2.2rem);
+  max-height: calc(100vh - 80px - 3.7rem);
   overflow-y: auto;
 }
 
@@ -286,4 +286,18 @@
 .validation-btn {
   width: 100%;
   font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .modal-overlay {
+    top: calc(70px + 1rem);
+    bottom: 0.75rem;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .modal-content,
+  .modal-inner {
+    max-height: none;
+  }
 }
