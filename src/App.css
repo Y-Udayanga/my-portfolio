@@ -86,6 +86,20 @@
   animation: app-scan 6s linear infinite;
 }
 
+[data-theme='light'] .matrix-bg {
+  opacity: 0.28;
+}
+
+[data-theme='light'] .app-scan-line {
+  opacity: 0.12;
+}
+
+[data-theme='light'] .bg-orb-1,
+[data-theme='light'] .bg-orb-2,
+[data-theme='light'] .bg-orb-3 {
+  opacity: 0.35;
+}
+
 @keyframes app-scan {
   0% { top: -2px; }
   100% { top: 100%; }

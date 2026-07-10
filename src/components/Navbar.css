@@ -23,6 +23,45 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 240, 255, 0.03);
 }
 
+[data-theme='light'] .navbar {
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom-color: rgba(0, 124, 137, 0.18);
+  box-shadow: 0 8px 26px rgba(17, 34, 68, 0.08);
+}
+
+[data-theme='light'] .navbar.scrolled {
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom-color: rgba(0, 124, 137, 0.24);
+  box-shadow: 0 10px 32px rgba(17, 34, 68, 0.12);
+}
+
+[data-theme='light'] .nav-link {
+  color: #52627a;
+}
+
+[data-theme='light'] .nav-link:hover {
+  color: #07111f;
+  background: rgba(0, 124, 137, 0.08);
+}
+
+[data-theme='light'] .nav-link.active,
+[data-theme='light'] .theme-toggle,
+[data-theme='light'] .mobile-menu-btn {
+  color: #007c89;
+}
+
+[data-theme='light'] .theme-toggle,
+[data-theme='light'] .mobile-menu-btn {
+  background: rgba(0, 124, 137, 0.08);
+  border-color: rgba(0, 124, 137, 0.22);
+}
+
+[data-theme='light'] .mobile-menu {
+  background: rgba(255, 255, 255, 0.96);
+  border-top-color: rgba(0, 124, 137, 0.18);
+  border-bottom-color: rgba(0, 124, 137, 0.18);
+}
+
 /* Scan line across navbar */
 .navbar-scan-line {
   position: absolute;

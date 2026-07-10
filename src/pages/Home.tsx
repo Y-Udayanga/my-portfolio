@@ -77,10 +77,10 @@ const Home = () => {
                             Yasindu <span className="text-gradient">Udayanga</span>
                         </h1>
                         <h2 className="heading-3 subtitle">
-                            BSc (Hons) Computer Science Undergraduate
+                            FinOps Engineer
                         </h2>
                         <p className="description">
-                            I build clean, user-friendly web applications and continuously improve my technical skills. Passionate about AI, machine learning, and modern front-end development.
+                            I help teams understand cloud cost, usage, and value while building clean, user-friendly web applications and continuously improving my technical skills.
                         </p>
 
                         <div className="cta-group">

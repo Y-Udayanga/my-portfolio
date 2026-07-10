@@ -35,11 +35,18 @@ const About = () => {
                         <div className="about-image-border" />
                         <div className="about-image-inner">
                             <div className="about-image-wrapper">
-                                <img
-                                    src="/myphoto.png"
-                                    alt="Yasindu Udayanga Working"
-                                    className="about-image"
-                                />
+                                <picture>
+                                    <source srcSet="/myphoto-optimized.jpg" type="image/jpeg" />
+                                    <img
+                                        src="/myphoto.png"
+                                        alt="Yasindu Udayanga Working"
+                                        className="about-image"
+                                        width="1200"
+                                        height="1200"
+                                        decoding="async"
+                                        fetchPriority="high"
+                                    />
+                                </picture>
                                 {/* Scan line on image */}
                                 <div className="image-scan-line" />
                             </div>
@@ -60,7 +67,7 @@ const About = () => {
                         <h2 className="about-greeting mb-4">Hello, I'm Yasindu Udayanga</h2>
 
                         <p className="about-paragraph mb-4">
-                            I am a BSc (Hons) Computer Science undergraduate at NSBM with hands-on experience in
+                            I am a FinOps Engineer and BSc (Hons) Computer Science undergraduate at NSBM with hands-on experience in
                             <strong> Angular, React, Spring Boot, </strong> and modern front-end development. I enjoy building
                             clean, user-friendly web applications and continuously improving my technical skills.
                         </p>
@@ -72,7 +79,7 @@ const About = () => {
                         </p>
 
                         <p className="about-paragraph mb-6">
-                            My goal is to become a skilled software engineer who builds impactful digital solutions while
+                            My goal is to grow as a skilled FinOps Engineer who builds impactful digital solutions while
                             continuously learning and growing.
                         </p>
 

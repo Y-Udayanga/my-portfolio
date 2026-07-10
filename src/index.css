@@ -46,20 +46,20 @@
 
 /* ── Light theme overrides ── */
 [data-theme='light'] {
-  --bg-primary: #f0f4ff;
-  --bg-secondary: #e4eaf8;
-  --bg-tertiary: #d0d9f0;
-  --bg-card: rgba(224, 232, 255, 0.6);
-  --text-primary: #0a0f1e;
-  --text-secondary: #334155;
-  --text-tertiary: #64748b;
-  --accent-color: #0090a0;
-  --accent-hover: #007080;
-  --accent-light: rgba(0, 144, 160, 0.08);
-  --border-color: rgba(0, 144, 160, 0.15);
-  --glass-bg: rgba(240, 244, 255, 0.7);
-  --glass-border: rgba(0, 144, 160, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --bg-primary: #f7f9ff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8eefb;
+  --bg-card: rgba(255, 255, 255, 0.82);
+  --text-primary: #07111f;
+  --text-secondary: #26364d;
+  --text-tertiary: #52627a;
+  --accent-color: #007c89;
+  --accent-hover: #005f69;
+  --accent-light: rgba(0, 124, 137, 0.1);
+  --border-color: rgba(0, 124, 137, 0.22);
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(0, 124, 137, 0.18);
+  --glass-shadow: 0 12px 34px 0 rgba(17, 34, 68, 0.11);
   --glow-cyan: 0 0 15px rgba(0, 144, 160, 0.2), 0 0 40px rgba(0, 144, 160, 0.06);
   --glow-violet: 0 0 15px rgba(168, 85, 247, 0.2), 0 0 40px rgba(168, 85, 247, 0.06);
   --glow-magenta: 0 0 15px rgba(246, 55, 236, 0.2), 0 0 40px rgba(246, 55, 236, 0.06);
