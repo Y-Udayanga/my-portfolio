@@ -135,7 +135,6 @@ export default function ManageCertificates() {
                 expiry: formExpiry || 'None',
                 description: formDesc,
                 image: finalImageUrl,
-                images: finalImagesArray,
                 link: formLink
             };
 
