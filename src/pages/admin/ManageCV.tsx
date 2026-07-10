@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { storage, APPWRITE_STORAGE_BUCKET_ID } from '../../lib/appwrite';
 import { Loader2, FileText, CheckCircle, Upload } from 'lucide-react';
-import { ID } from 'appwrite';
+
 import './ManageCV.css';
 
 export default function ManageCV() {

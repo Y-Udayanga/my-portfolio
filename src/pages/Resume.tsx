@@ -20,7 +20,7 @@ const Resume = () => {
             const result = storage.getFileDownload(APPWRITE_STORAGE_BUCKET_ID, 'my-cv-pdf');
             
             const link = document.createElement('a');
-            link.href = result.href; // result is a URL object
+            link.href = typeof result === 'string' ? result : (result as any).href; // result is a URL object or string
             link.download = 'Yasindu_Udayanga_Resume.pdf';
             document.body.appendChild(link);
             link.click();
