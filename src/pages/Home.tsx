@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Rocket, Award, Radio, Code, Palette, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageTransition from '../components/PageTransition';
-import CloudCode3D from '../components/CloudCode3D';
+import SpaceTraveler3D from '../components/SpaceTraveler3D';
 import './Home.css';
 
 const useTypewriter = (text: string, speed = 50, delay = 500) => {
@@ -124,9 +124,9 @@ const Home = () => {
                             <span>Fast Perf</span>
                         </div>
 
-                        {/* Cloud + Code 3D animation */}
+                        {/* SpaceTraveler 3D Cute Model */}
                         <div className="hero-3d-canvas">
-                            <CloudCode3D />
+                            <SpaceTraveler3D />
                         </div>
                     </motion.div>
                 </div>
