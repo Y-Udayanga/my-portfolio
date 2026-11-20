@@ -16,6 +16,79 @@
   z-index: 1;
 }
 
+/* Native View Transitions — scroll and link changes between the same pages.
+   The root snapshot stays still so the navbar does not travel with the page. */
+html.vt-ready {
+  view-transition-name: none;
+}
+
+html.vt-ready .page-stage {
+  view-transition-name: portfolio-page;
+  view-transition-class: portfolio-page;
+}
+
+::view-transition-old(portfolio-page),
+::view-transition-new(portfolio-page) {
+  animation-duration: 0.62s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  mix-blend-mode: normal;
+}
+
+html[data-vt-dir='forward']::view-transition-old(portfolio-page) {
+  animation-name: vt-leave-up;
+}
+
+html[data-vt-dir='forward']::view-transition-new(portfolio-page) {
+  animation-name: vt-enter-up;
+}
+
+html[data-vt-dir='back']::view-transition-old(portfolio-page) {
+  animation-name: vt-leave-down;
+}
+
+html[data-vt-dir='back']::view-transition-new(portfolio-page) {
+  animation-name: vt-enter-down;
+}
+
+@keyframes vt-leave-up {
+  to {
+    opacity: 0;
+    transform: translateY(-52px) scale(0.985);
+    filter: blur(8px);
+  }
+}
+
+@keyframes vt-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(68px) scale(1.015);
+    filter: blur(10px);
+  }
+}
+
+@keyframes vt-leave-down {
+  to {
+    opacity: 0;
+    transform: translateY(52px) scale(0.985);
+    filter: blur(8px);
+  }
+}
+
+@keyframes vt-enter-down {
+  from {
+    opacity: 0;
+    transform: translateY(-68px) scale(1.015);
+    filter: blur(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(portfolio-page),
+  ::view-transition-new(portfolio-page) {
+    animation: none !important;
+  }
+}
+
 /* ── Floating Holographic Orbs ── */
 .bg-orb-1,
 .bg-orb-2,

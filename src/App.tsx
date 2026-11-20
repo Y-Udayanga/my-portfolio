@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 
 import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
+import ScrollPageProvider from './components/ScrollPageProvider';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -55,33 +56,46 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
       {loading ? (
         <LoadingScreen onLoadingComplete={() => setLoading(false)} />
       ) : (
-        <div className="app-container">
-          {/* Dot-grid matrix background */}
-          <div className="matrix-bg"></div>
+        <ScrollPageProvider>
+          <div className="app-container">
+            {/* Dot-grid matrix background */}
+            <div className="matrix-bg"></div>
 
-          {/* Floating holographic orbs */}
-          <div className="bg-orb-1"></div>
-          <div className="bg-orb-2"></div>
-          <div className="bg-orb-3"></div>
+            {/* Floating holographic orbs */}
+            <div className="bg-orb-1"></div>
+            <div className="bg-orb-2"></div>
+            <div className="bg-orb-3"></div>
 
-          {/* Subtle scan-line across entire viewport */}
-          <div className="app-scan-line"></div>
+            {/* Subtle scan-line across entire viewport */}
+            <div className="app-scan-line"></div>
 
-          <Navbar />
+            <Navbar />
 
-          <main className="main-content">
-            <AnimatePresence mode="wait">
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/certificate" element={<Certificate />} />
-                <Route path="/resume" element={<Resume />} />
-                <Route path="/contact" element={<Contact />} />
-              </Routes>
-            </AnimatePresence>
-          </main>
-        </div>
+            <main className="main-content">
+              {typeof document !== 'undefined' && typeof document.startViewTransition === 'function' ? (
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/certificate" element={<Certificate />} />
+                  <Route path="/resume" element={<Resume />} />
+                  <Route path="/contact" element={<Contact />} />
+                </Routes>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <Routes location={location} key={location.pathname}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/certificate" element={<Certificate />} />
+                    <Route path="/resume" element={<Resume />} />
+                    <Route path="/contact" element={<Contact />} />
+                  </Routes>
+                </AnimatePresence>
+              )}
+            </main>
+          </div>
+        </ScrollPageProvider>
       )}
     </>
   );

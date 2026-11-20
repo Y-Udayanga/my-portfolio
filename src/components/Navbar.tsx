@@ -4,15 +4,9 @@ import { Moon, Sun, Menu, X } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Navbar.css';
+import { PUBLIC_PAGES } from '../navigation/pages';
 
-const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Projects', path: '/projects' },
-    { name: 'Certificate', path: '/certificate' },
-    { name: 'Resume', path: '/resume' },
-    { name: 'Contact', path: '/contact' },
-];
+const navLinks = PUBLIC_PAGES;
 
 const Navbar = () => {
     const { theme, toggleTheme } = useTheme();
