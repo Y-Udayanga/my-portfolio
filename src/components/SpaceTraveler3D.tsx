@@ -1,114 +1,180 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-// ── Helpers for Procedural Textures ──
-function createStarSpriteTexture(): THREE.CanvasTexture {
+// ── 1. PROCEDURAL SOUND SYNTHESIZER (Sparkle & Boing Chimes via Web Audio) ──
+class CuteSoundSynth {
+    ctx: AudioContext | null = null;
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    playSparkleChime() {
+        try {
+            this.init();
+            if (!this.ctx) return;
+            const t = this.ctx.currentTime;
+            // Pentatonic sparkle arpeggio: C5, E5, G5, B5, C6, E6
+            const notes = [523.25, 659.25, 783.99, 987.77, 1046.5, 1318.51];
+            notes.forEach((freq, idx) => {
+                const osc = this.ctx!.createOscillator();
+                const gain = this.ctx!.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t + idx * 0.05);
+                gain.gain.setValueAtTime(0.07, t + idx * 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.38);
+                osc.connect(gain);
+                gain.connect(this.ctx!.destination);
+                osc.start(t + idx * 0.05);
+                osc.stop(t + idx * 0.05 + 0.38);
+            });
+        } catch {
+            // Audio context policy fallback
+        }
+    }
+
+    playBoing() {
+        try {
+            this.init();
+            if (!this.ctx) return;
+            const t = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(260, t);
+            osc.frequency.exponentialRampToValueAtTime(620, t + 0.12);
+            osc.frequency.exponentialRampToValueAtTime(380, t + 0.28);
+            gain.gain.setValueAtTime(0.09, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.3);
+        } catch {
+            // Audio context policy fallback
+        }
+    }
+}
+
+// ── 2. VISOR BASE TEXTURE (Deep Obsidian-Violet with High Top Specular Highlight) ──
+function createVisorDomeTexture(): THREE.CanvasTexture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    if (ctx) {
+        // Aurora candy visor: indigo core, violet mid, cyan rim
+        const bgGrad = ctx.createRadialGradient(480, 420, 40, 512, 540, 560);
+        bgGrad.addColorStop(0, '#6d4dff');
+        bgGrad.addColorStop(0.28, '#3b1d8a');
+        bgGrad.addColorStop(0.55, '#1a0b4a');
+        bgGrad.addColorStop(0.82, '#12082e');
+        bgGrad.addColorStop(1, '#070414');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, 1024, 1024);
+
+        // Soft pink wash on the lower cheeks of the glass
+        const blushWash = ctx.createRadialGradient(512, 720, 20, 512, 700, 340);
+        blushWash.addColorStop(0, 'rgba(255, 110, 170, 0.28)');
+        blushWash.addColorStop(1, 'rgba(255, 110, 170, 0)');
+        ctx.fillStyle = blushWash;
+        ctx.fillRect(0, 0, 1024, 1024);
+
+        // Cyan rim glow along the bottom curve
+        const rimWash = ctx.createRadialGradient(512, 980, 40, 512, 860, 420);
+        rimWash.addColorStop(0, 'rgba(34, 211, 238, 0.35)');
+        rimWash.addColorStop(1, 'rgba(34, 211, 238, 0)');
+        ctx.fillStyle = rimWash;
+        ctx.fillRect(0, 0, 1024, 1024);
+
+        // Fine glass scanlines
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.045)';
+        ctx.lineWidth = 1.2;
+        for (let y = 0; y < 1024; y += 16) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(1024, y);
+            ctx.stroke();
+        }
+
+        // Big glossy specular blob, kept high so it stays off the face
+        ctx.save();
+        ctx.translate(430, 190);
+        ctx.rotate(-0.32);
+        const spec = ctx.createLinearGradient(-200, 0, 200, 0);
+        spec.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        spec.addColorStop(0.35, 'rgba(255, 255, 255, 0.92)');
+        spec.addColorStop(0.7, 'rgba(186, 230, 253, 0.55)');
+        spec.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = spec;
+        ctx.shadowColor = '#67e8f9';
+        ctx.shadowBlur = 28;
+        ctx.beginPath();
+        ctx.roundRect(-210, -42, 420, 84, 42);
+        ctx.fill();
+        ctx.restore();
+
+        // Smaller side sparkle
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.shadowColor = '#f0abfc';
+        ctx.shadowBlur = 22;
+        ctx.beginPath();
+        ctx.ellipse(790, 360, 22, 38, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Tiny star flecks on the glass
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        [[180, 260], [860, 240], [220, 640], [800, 700], [640, 160]].forEach(([x, y]) => {
+            ctx.beginPath();
+            ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+}
+
+// ── 3. PROCEDURAL STAR PARTICLES ──
+function createStarTexture(): THREE.CanvasTexture {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-        // Radial soft glow
         const grad = ctx.createRadialGradient(64, 64, 2, 64, 64, 60);
         grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        grad.addColorStop(0.25, 'rgba(0, 240, 255, 0.85)');
-        grad.addColorStop(0.6, 'rgba(168, 85, 247, 0.3)');
+        grad.addColorStop(0.3, 'rgba(0, 240, 255, 0.85)');
+        grad.addColorStop(0.7, 'rgba(168, 85, 247, 0.25)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 128, 128);
 
-        // 4-point star flare
         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
         ctx.beginPath();
-        ctx.moveTo(64, 6);
-        ctx.quadraticCurveTo(64, 64, 122, 64);
-        ctx.quadraticCurveTo(64, 64, 64, 122);
-        ctx.quadraticCurveTo(64, 64, 6, 64);
-        ctx.quadraticCurveTo(64, 64, 64, 6);
+        ctx.moveTo(64, 8);
+        ctx.quadraticCurveTo(64, 64, 120, 64);
+        ctx.quadraticCurveTo(64, 64, 64, 120);
+        ctx.quadraticCurveTo(64, 64, 8, 64);
+        ctx.quadraticCurveTo(64, 64, 64, 8);
         ctx.fill();
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    return texture;
-}
-
-function createBookCoverTexture(): THREE.CanvasTexture {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-        // Futuristic cosmic blue gradient
-        const bgGrad = ctx.createLinearGradient(0, 0, 512, 512);
-        bgGrad.addColorStop(0, '#0c1a36');
-        bgGrad.addColorStop(0.5, '#12254e');
-        bgGrad.addColorStop(1, '#091326');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, 512, 512);
-
-        // Gold corner flourishes
-        ctx.fillStyle = '#ffc83b';
-        const cornerSize = 44;
-        ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(cornerSize, 0); ctx.lineTo(0, cornerSize); ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(0, 512); ctx.lineTo(cornerSize, 512); ctx.lineTo(0, 512 - cornerSize); ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(512, 0); ctx.lineTo(512 - cornerSize, 0); ctx.lineTo(512, cornerSize); ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(512, 512); ctx.lineTo(512 - cornerSize, 512); ctx.lineTo(512, 512 - cornerSize); ctx.fill();
-
-        // Saturn Emblem
-        ctx.save();
-        ctx.translate(256, 260);
-        ctx.rotate(-0.32);
-
-        // Planet sphere
-        const planetGrad = ctx.createLinearGradient(-45, -45, 45, 45);
-        planetGrad.addColorStop(0, '#00f0ff');
-        planetGrad.addColorStop(0.7, '#3b82f6');
-        planetGrad.addColorStop(1, '#a855f7');
-        ctx.fillStyle = planetGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, 54, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Saturn Rings
-        ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = 12;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 105, 26, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 120, 31, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.restore();
-
-        // Starbursts
-        const drawSparkle = (x: number, y: number, r: number) => {
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.moveTo(x, y - r);
-            ctx.quadraticCurveTo(x, y, x + r, y);
-            ctx.quadraticCurveTo(x, y, x, y + r);
-            ctx.quadraticCurveTo(x, y, x - r, y);
-            ctx.quadraticCurveTo(x, y, x, y - r);
-            ctx.fill();
-        };
-        drawSparkle(135, 155, 14);
-        drawSparkle(370, 365, 12);
-        drawSparkle(160, 375, 10);
-        drawSparkle(365, 140, 9);
     }
     return new THREE.CanvasTexture(canvas);
 }
 
-interface MagicParticle {
+interface ReactionParticle {
     mesh: THREE.Mesh;
     vel: THREE.Vector3;
+    rotVel: THREE.Vector3;
     life: number;
     decay: number;
 }
@@ -120,14 +186,16 @@ const SpaceTraveler3D: React.FC = () => {
         const container = containerRef.current;
         if (!container) return;
 
-        // ── Scene, Camera & Renderer ──
+        const soundFX = new CuteSoundSynth();
+
+        // ── Scene & Camera ──
         const width = container.clientWidth || 480;
         const height = container.clientHeight || 480;
 
         const scene = new THREE.Scene();
 
         const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-        camera.position.set(0, 0.15, 6.9);
+        camera.position.set(0, -0.05, 7.5);
 
         const renderer = new THREE.WebGLRenderer({
             alpha: true,
@@ -137,588 +205,692 @@ const SpaceTraveler3D: React.FC = () => {
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15;
+        renderer.toneMappingExposure = 1.28;
         container.appendChild(renderer.domElement);
 
         // ── Lighting ──
-        // Ambient fill
-        const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.85);
+        const ambientLight = new THREE.AmbientLight(0xfff4fb, 0.72);
         scene.add(ambientLight);
 
-        // Key directional light (soft warm white)
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.25);
-        dirLight.position.set(4, 7, 6);
-        scene.add(dirLight);
+        const hemi = new THREE.HemisphereLight(0xc4b5fd, 0xfb7185, 0.55);
+        scene.add(hemi);
 
-        // Cyan rim light from bottom left
-        const rimCyan = new THREE.DirectionalLight(0x00f0ff, 1.1);
-        rimCyan.position.set(-6, -2, -3);
+        const mainLight = new THREE.DirectionalLight(0xfff7ed, 1.55);
+        mainLight.position.set(3.2, 8, 6);
+        scene.add(mainLight);
+
+        const rimCyan = new THREE.DirectionalLight(0x22d3ee, 1.45);
+        rimCyan.position.set(-6, 2, 4);
         scene.add(rimCyan);
 
-        // Violet rim light from top right
-        const rimViolet = new THREE.DirectionalLight(0xa855f7, 1.0);
-        rimViolet.position.set(5, -3, -4);
+        const rimPink = new THREE.DirectionalLight(0xfb7185, 1.05);
+        rimPink.position.set(5, 1, 3);
+        scene.add(rimPink);
+
+        const rimViolet = new THREE.DirectionalLight(0xc084fc, 0.9);
+        rimViolet.position.set(2, -3, -4);
         scene.add(rimViolet);
 
-        // Warm book glow light illuminating face
-        const bookGlow = new THREE.PointLight(0xffbe3b, 1.6, 4.5);
-        bookGlow.position.set(0, 0.05, 1.25);
-        scene.add(bookGlow);
+        const visorFrontLight = new THREE.PointLight(0xa5f3fc, 2.4, 5.5);
+        visorFrontLight.position.set(0, 1.05, 2.6);
+        scene.add(visorFrontLight);
 
-        // ── Materials ──
-        const suitWhiteMat = new THREE.MeshStandardMaterial({
-            color: 0xf5f8ff,
-            roughness: 0.32,
+        const cheekLight = new THREE.PointLight(0xff8fab, 1.1, 3.2);
+        cheekLight.position.set(0, 0.35, 2.4);
+        scene.add(cheekLight);
+
+        // ═══════════════════════════════════════════
+        // VIBRANT COLOR MATERIALS
+        // ═══════════════════════════════════════════
+        const suitNavyMat = new THREE.MeshPhysicalMaterial({
+            color: 0x2a3f78,
+            roughness: 0.28,
+            metalness: 0.08,
+            clearcoat: 0.65,
+            clearcoatRoughness: 0.18,
+        });
+
+        const suitCyanMat = new THREE.MeshPhysicalMaterial({
+            color: 0x22d3ee,
+            emissive: 0x0891b2,
+            emissiveIntensity: 0.28,
+            roughness: 0.22,
+            metalness: 0.12,
+            clearcoat: 0.85,
+            clearcoatRoughness: 0.12,
+        });
+
+        const suitMintMat = new THREE.MeshPhysicalMaterial({
+            color: 0x5eead4,
+            emissive: 0x14b8a6,
+            emissiveIntensity: 0.18,
+            roughness: 0.2,
             metalness: 0.06,
+            clearcoat: 0.9,
+            clearcoatRoughness: 0.1,
         });
 
-        const suitBlueMat = new THREE.MeshStandardMaterial({
-            color: 0x0284c7, // vibrant cyan-blue accent
-            roughness: 0.3,
-            metalness: 0.15,
+        const suitPinkMat = new THREE.MeshPhysicalMaterial({
+            color: 0xfb7185,
+            emissive: 0xbe185d,
+            emissiveIntensity: 0.22,
+            roughness: 0.24,
+            metalness: 0.05,
+            clearcoat: 0.8,
+            clearcoatRoughness: 0.12,
         });
 
-        const suitDarkTrimMat = new THREE.MeshStandardMaterial({
-            color: 0x0f172a,
-            roughness: 0.45,
+        const suitGoldMat = new THREE.MeshPhysicalMaterial({
+            color: 0xfbbf24,
+            emissive: 0xf59e0b,
+            emissiveIntensity: 0.18,
+            roughness: 0.22,
+            metalness: 0.35,
+            clearcoat: 0.7,
+            clearcoatRoughness: 0.15,
         });
 
-        const cyanGlowMat = new THREE.MeshBasicMaterial({
-            color: 0x00f0ff,
+        const suitLavenderMat = new THREE.MeshPhysicalMaterial({
+            color: 0xc4b5fd,
+            emissive: 0x8b5cf6,
+            emissiveIntensity: 0.16,
+            roughness: 0.24,
+            metalness: 0.08,
+            clearcoat: 0.75,
+            clearcoatRoughness: 0.14,
         });
 
-        const skinMat = new THREE.MeshStandardMaterial({
-            color: 0xffd1ba, // cute peach skin
-            roughness: 0.58,
-            metalness: 0.02,
-        });
-
-        const blushMat = new THREE.MeshBasicMaterial({
-            color: 0xff6b8b,
-            transparent: true,
-            opacity: 0.38,
-        });
-
-        const hairMat = new THREE.MeshStandardMaterial({
-            color: 0x422316, // rich chocolate brown
-            roughness: 0.65,
+        const suitWhiteMat = new THREE.MeshPhysicalMaterial({
+            color: 0xfff7fb,
+            roughness: 0.16,
             metalness: 0.04,
+            clearcoat: 0.95,
+            clearcoatRoughness: 0.08,
         });
 
-        const antBulbMat = new THREE.MeshStandardMaterial({
-            color: 0xffd166,
-            emissive: 0xff9f1c,
-            emissiveIntensity: 1.1,
-            roughness: 0.15,
+        const suitDarkMat = new THREE.MeshPhysicalMaterial({
+            color: 0x111827,
+            roughness: 0.35,
+            metalness: 0.25,
+            clearcoat: 0.4,
+            clearcoatRoughness: 0.2,
         });
 
-        const glassVisorMat = new THREE.MeshPhysicalMaterial({
+        const redCapsuleMat = new THREE.MeshPhysicalMaterial({
+            color: 0xfb4d6a,
+            emissive: 0xe11d48,
+            emissiveIntensity: 0.25,
+            roughness: 0.18,
+            metalness: 0.08,
+            clearcoat: 1,
+            clearcoatRoughness: 0.06,
+        });
+
+        const neonCyanMat = new THREE.MeshStandardMaterial({
+            color: 0x67e8f9,
+            emissive: 0x22d3ee,
+            emissiveIntensity: 0.95,
+            roughness: 0.18,
+            metalness: 0.05,
+        });
+
+        const whiteCoreMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+        });
+
+        const irisDarkMat = new THREE.MeshStandardMaterial({
+            color: 0x1e1b4b,
+            roughness: 0.35,
+            metalness: 0.05,
+        });
+
+        const pinkTongueMat = new THREE.MeshStandardMaterial({
+            color: 0xff8fab,
+            emissive: 0xfb7185,
+            emissiveIntensity: 0.35,
+            roughness: 0.4,
+        });
+
+        const pinkBlushMat = new THREE.MeshStandardMaterial({
+            color: 0xff6b93,
+            emissive: 0xfb7185,
+            emissiveIntensity: 0.45,
+            transparent: true,
+            opacity: 0.82,
+            roughness: 0.55,
+        });
+
+        // Visor Dome Materials
+        const visorDomeTex = createVisorDomeTexture();
+        const visorDomeMat = new THREE.MeshStandardMaterial({
+            map: visorDomeTex,
+            roughness: 0.1,
+            metalness: 0.2,
+        });
+
+        const visorGlassOverlayMat = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
-            opacity: 0.22,
+            opacity: 0.12,
             roughness: 0.04,
-            metalness: 0.05,
-            reflectivity: 0.9,
+            metalness: 0.1,
+            reflectivity: 0.95,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.04,
             depthWrite: false,
         });
 
-        const bookCoverTex = createBookCoverTexture();
-        const bookCoverMat = new THREE.MeshStandardMaterial({
-            map: bookCoverTex,
-            roughness: 0.42,
-            metalness: 0.12,
-        });
+        // ── Astronaut Master Group ──
+        const astronautMasterGroup = new THREE.Group();
+        scene.add(astronautMasterGroup);
 
-        const spineGoldMat = new THREE.MeshStandardMaterial({
-            color: 0xfbbf24,
-            roughness: 0.28,
-            metalness: 0.5,
-        });
-
-        const glowingPageMat = new THREE.MeshStandardMaterial({
-            color: 0xfffbeb,
-            emissive: 0xfbbf24,
-            emissiveIntensity: 0.4,
-            roughness: 0.38,
-        });
-
-        // ── Build Astronaut ──
         const astronautGroup = new THREE.Group();
-        scene.add(astronautGroup);
+        astronautMasterGroup.add(astronautGroup);
 
-        // 1. Head Group
+        // ═══════════════════════════════════════════
+        // 1. HEAD & REDESIGNED HELMET SCREEN + CUTE 3D FACE
+        // ═══════════════════════════════════════════
         const headGroup = new THREE.Group();
-        headGroup.position.set(0, 0.95, 0);
+        headGroup.position.set(0, 0.9, 0);
+        headGroup.scale.set(1.08, 1.08, 1.08);
         astronautGroup.add(headGroup);
 
-        // Outer White Helmet Shell
-        const helmetShell = new THREE.Mesh(new THREE.SphereGeometry(1.18, 48, 48), suitWhiteMat);
-        helmetShell.scale.set(1.06, 0.98, 1.0);
-        headGroup.add(helmetShell);
+        // ── A. FRONT VISOR DOME (The Helmet Screen) ──
+        const screenDomeGeo = new THREE.SphereGeometry(1.14, 64, 64);
+        const helmetScreenMesh = new THREE.Mesh(screenDomeGeo, visorDomeMat);
+        helmetScreenMesh.scale.set(1.04, 1.02, 0.95);
+        helmetScreenMesh.position.set(0, 0.04, 0.22);
+        headGroup.add(helmetScreenMesh);
 
-        // Cyan Top Helmet Patch Accent
-        const topPatch = new THREE.Mesh(
-            new THREE.SphereGeometry(1.19, 32, 32, -Math.PI * 0.35, Math.PI * 0.25, 0.25, 0.55),
-            suitBlueMat
+        const visorGlassMesh = new THREE.Mesh(screenDomeGeo, visorGlassOverlayMat);
+        visorGlassMesh.scale.set(1.045, 1.025, 0.955);
+        visorGlassMesh.position.set(0, 0.04, 0.225);
+        headGroup.add(visorGlassMesh);
+
+        // ── B. ACCURATELY POSITIONED CUTE FACE ELEMENTS (3D ON VISOR) ──
+        // Centered directly on the visor dome!
+        const digitalFaceGroup = new THREE.Group();
+        digitalFaceGroup.position.set(0, 0.04, 0.22);
+        headGroup.add(digitalFaceGroup);
+
+        // 1. EYES (Perfect Horizontal Symmetry: Left at -0.30, Right at +0.30)
+        const eyeMeshes: { group: THREE.Group; side: number; leftEye: boolean }[] = [];
+
+        [-1, 1].forEach((side) => {
+            const eyeGroup = new THREE.Group();
+            // Exactly on the front curvature of the visor sphere!
+            eyeGroup.position.set(side * 0.30, 0.10, 1.07);
+            eyeGroup.rotation.y = side * 0.18; // Angled naturally along the sphere curvature
+            digitalFaceGroup.add(eyeGroup);
+
+            // Outer Neon Cyan Glow Capsule
+            const outerGlowPill = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.145, 0.2, 16, 24),
+                neonCyanMat
+            );
+            eyeGroup.add(outerGlowPill);
+
+            // Inner Deep Dark Navy/Cosmic Iris Capsule
+            const innerIrisPill = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.108, 0.15, 16, 20),
+                irisDarkMat
+            );
+            innerIrisPill.position.z = 0.04;
+            eyeGroup.add(innerIrisPill);
+
+            // 1st Big Top-Left Sparkle Catchlight
+            const catchlightBig = new THREE.Mesh(
+                new THREE.SphereGeometry(0.052, 16, 16),
+                whiteCoreMat
+            );
+            catchlightBig.position.set(-side * 0.028, 0.09, 0.045);
+            eyeGroup.add(catchlightBig);
+
+            // 2nd Small Bottom-Right Sparkle Catchlight
+            const catchlightSmall = new THREE.Mesh(
+                new THREE.SphereGeometry(0.028, 12, 12),
+                whiteCoreMat
+            );
+            catchlightSmall.position.set(side * 0.034, -0.075, 0.04);
+            eyeGroup.add(catchlightSmall);
+
+            // Cute Arched Cyan Eyebrow
+            const brow = new THREE.Mesh(
+                new THREE.TorusGeometry(0.11, 0.018, 8, 20, Math.PI * 0.55),
+                neonCyanMat
+            );
+            brow.rotation.z = Math.PI * 0.22 - side * 0.05;
+            brow.position.set(0, 0.19, 0.01);
+            eyeGroup.add(brow);
+
+            eyeMeshes.push({ group: eyeGroup, side, leftEye: side === -1 });
+        });
+
+        // 2. MOUTH (DEAD CENTER AT X = 0, DIRECTLY UNDER THE EYES!)
+        const mouthGroup = new THREE.Group();
+        mouthGroup.position.set(0, -0.16, 1.09); // Exactly on the front curvature of the visor
+        digitalFaceGroup.add(mouthGroup);
+
+        // Cheerful Glowing Smile Arc (‿)
+        const smileArcAngle = Math.PI * 0.72;
+        const smileOuter = new THREE.Mesh(
+            new THREE.TorusGeometry(0.17, 0.028, 16, 32, smileArcAngle),
+            neonCyanMat
         );
-        topPatch.scale.set(1.06, 0.98, 1.0);
-        headGroup.add(topPatch);
+        smileOuter.rotation.z = -Math.PI / 2 - smileArcAngle / 2;
+        mouthGroup.add(smileOuter);
 
-        // Helmet Neck Collar
-        const neckRing = new THREE.Mesh(new THREE.TorusGeometry(0.88, 0.12, 20, 48), suitWhiteMat);
+        const smileInner = new THREE.Mesh(
+            new THREE.TorusGeometry(0.17, 0.012, 16, 32, smileArcAngle * 0.94),
+            whiteCoreMat
+        );
+        smileInner.rotation.z = -Math.PI / 2 - (smileArcAngle * 0.94) / 2;
+        smileInner.position.z = 0.012;
+        mouthGroup.add(smileInner);
+
+        // Cute Pink Tongue nestled inside the smile
+        const pinkTongue = new THREE.Mesh(
+            new THREE.SphereGeometry(0.07, 16, 16),
+            pinkTongueMat
+        );
+        pinkTongue.scale.set(1.0, 0.65, 0.45);
+        pinkTongue.position.set(0, -0.065, 0.01);
+        mouthGroup.add(pinkTongue);
+
+        // Smiling Dimple Dots at the ends of the smile
+        [-1, 1].forEach((side) => {
+            const dimple = new THREE.Mesh(new THREE.SphereGeometry(0.026, 12, 12), neonCyanMat);
+            dimple.position.set(
+                side * Math.cos(smileArcAngle / 2 - 0.1) * 0.17,
+                -Math.sin(smileArcAngle / 2 - 0.1) * 0.17,
+                0.015
+            );
+            mouthGroup.add(dimple);
+        });
+
+        // 3. BLUSH MARKS (Symmetrical below each eye: Left at -0.42, Right at +0.42)
+        [-1, 1].forEach((side) => {
+            const blushGroup = new THREE.Group();
+            blushGroup.position.set(side * 0.46, -0.02, 1.0);
+            blushGroup.rotation.y = side * 0.35;
+            digitalFaceGroup.add(blushGroup);
+
+            const blushPuff = new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 20), pinkBlushMat);
+            blushPuff.scale.set(1.15, 0.72, 0.35);
+            blushGroup.add(blushPuff);
+
+            // 3 Cute Anime Hash Lines
+            for (let i = -1; i <= 1; i++) {
+                const line = new THREE.Mesh(new THREE.PlaneGeometry(0.015, 0.07), whiteCoreMat);
+                line.rotation.z = 0.45;
+                line.position.set(i * 0.035, 0, 0.005);
+                blushGroup.add(line);
+            }
+        });
+
+        // ── C. HELMET SCREEN BEZEL RIM ──
+        const bezelDark = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.05, 20, 64), suitDarkMat);
+        bezelDark.position.set(0, 0.04, 0.22);
+        bezelDark.scale.set(1.03, 1.02, 1);
+        headGroup.add(bezelDark);
+
+        const bezelCyan = new THREE.Mesh(new THREE.TorusGeometry(1.16, 0.07, 20, 64), suitWhiteMat);
+        bezelCyan.position.set(0, 0.04, 0.16);
+        bezelCyan.scale.set(1.04, 1.03, 1);
+        headGroup.add(bezelCyan);
+
+        // ── D. BACK HELMET SHELL ──
+        const backHelmetMesh = new THREE.Mesh(new THREE.SphereGeometry(1.2, 48, 48), suitWhiteMat);
+        backHelmetMesh.position.set(0, 0.04, -0.22);
+        backHelmetMesh.scale.set(1.04, 1.0, 1.0);
+        headGroup.add(backHelmetMesh);
+
+        const topCrown = new THREE.Mesh(
+            new THREE.SphereGeometry(1.22, 32, 32, -Math.PI * 0.35, Math.PI * 0.25, 0.22, 0.58),
+            suitCyanMat
+        );
+        topCrown.position.set(0, 0.04, -0.22);
+        topCrown.scale.set(1.04, 1.0, 1.0);
+        headGroup.add(topCrown);
+
+        const neckRing = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.09, 20, 48), suitDarkMat);
         neckRing.rotation.x = Math.PI / 2;
-        neckRing.position.y = -0.82;
+        neckRing.position.y = -0.88;
         headGroup.add(neckRing);
 
-        // Visor Rim
-        const visorRim = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.09, 20, 48), suitWhiteMat);
-        visorRim.scale.set(1.05, 0.9, 1);
-        visorRim.position.set(0, 0.02, 0.58);
-        headGroup.add(visorRim);
-
-        // Ear Muff Pods (-1, 1) with Cyan Glow Rings
+        // Circular Side Ear Muffs
         [-1, 1].forEach((side) => {
             const earGroup = new THREE.Group();
-            earGroup.position.set(side * 1.2, -0.02, 0.05);
+            earGroup.position.set(side * 1.25, 0.05, 0.02);
 
-            const bluePod = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.22, 32), suitBlueMat);
-            bluePod.rotation.z = Math.PI / 2;
-            earGroup.add(bluePod);
+            const darkRing = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.08, 32), suitDarkMat);
+            darkRing.rotation.z = Math.PI / 2;
+            earGroup.add(darkRing);
 
-            const whiteCap = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 24), suitWhiteMat);
-            whiteCap.scale.set(0.35, 1, 1);
-            whiteCap.position.x = side * 0.08;
-            earGroup.add(whiteCap);
+            const cyanRing = new THREE.Mesh(new THREE.CylinderGeometry(0.41, 0.41, 0.12, 32), suitCyanMat);
+            cyanRing.rotation.z = Math.PI / 2;
+            cyanRing.position.x = side * 0.04;
+            earGroup.add(cyanRing);
 
-            const cyanGlow = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.06, 24), cyanGlowMat);
-            cyanGlow.rotation.z = Math.PI / 2;
-            cyanGlow.position.x = side * 0.16;
-            earGroup.add(cyanGlow);
+            const whiteEarPod = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.16, 32), suitWhiteMat);
+            whiteEarPod.rotation.z = Math.PI / 2;
+            whiteEarPod.position.x = side * 0.09;
+            earGroup.add(whiteEarPod);
+
+            const earCap = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 24), suitWhiteMat);
+            earCap.scale.set(0.35, 1, 1);
+            earCap.position.x = side * 0.16;
+            earGroup.add(earCap);
+
+            const earCenterGlow = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), neonCyanMat);
+            earCenterGlow.position.x = side * 0.22;
+            earGroup.add(earCenterGlow);
 
             headGroup.add(earGroup);
         });
 
-        // Golden Glowing Antenna
-        const antennaGroup = new THREE.Group();
-        antennaGroup.position.set(-1.12, 0.32, 0.05);
-        antennaGroup.rotation.z = 0.08;
-        headGroup.add(antennaGroup);
-
-        const antBase = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.18, 20), suitBlueMat);
-        antennaGroup.add(antBase);
-
-        const antStalk = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.035, 0.045, 0.85, 16),
-            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.7, roughness: 0.2 })
-        );
-        antStalk.position.y = 0.45;
-        antennaGroup.add(antStalk);
-
-        const antBulb = new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 24), antBulbMat);
-        antBulb.position.y = 0.92;
-        antennaGroup.add(antBulb);
-
-        const antPointLight = new THREE.PointLight(0xffbe3d, 1.2, 3.5);
-        antPointLight.position.y = 0.92;
-        antennaGroup.add(antPointLight);
-
-        // 2. Face Group
-        const faceGroup = new THREE.Group();
-        faceGroup.position.set(0, -0.05, 0.24);
-        headGroup.add(faceGroup);
-
-        // Head Base Sphere
-        const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.78, 36, 36), skinMat);
-        headMesh.scale.set(1.06, 0.96, 0.92);
-        faceGroup.add(headMesh);
-
-        // Cute Ears
-        [-1, 1].forEach((side) => {
-            const ear = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), skinMat);
-            ear.scale.set(0.5, 1, 0.8);
-            ear.position.set(side * 0.78, -0.08, 0.05);
-            faceGroup.add(ear);
-        });
-
-        // Rosy Cheeks
-        [-1, 1].forEach((side) => {
-            const cheek = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), blushMat);
-            cheek.position.set(side * 0.44, -0.14, 0.68);
-            cheek.rotation.y = side * 0.45;
-            faceGroup.add(cheek);
-        });
-
-        // Expressive Eyes with Pupils and Catchlights
-        const eyeGroups: THREE.Group[] = [];
-        [-1, 1].forEach((side) => {
-            const eyeGrp = new THREE.Group();
-            eyeGrp.position.set(side * 0.31, 0.04, 0.66);
-            eyeGrp.rotation.y = side * 0.22;
-
-            // Sclera (White)
-            const sclera = new THREE.Mesh(
-                new THREE.SphereGeometry(0.19, 24, 24),
-                new THREE.MeshBasicMaterial({ color: 0xffffff })
-            );
-            sclera.scale.set(1.0, 1.12, 0.35);
-            eyeGrp.add(sclera);
-
-            // Iris
-            const iris = new THREE.Mesh(
-                new THREE.SphereGeometry(0.135, 24, 24),
-                new THREE.MeshBasicMaterial({ color: 0x1e293b }) // deep stylish iris
-            );
-            iris.scale.set(1.0, 1.1, 0.38);
-            iris.position.set(-side * 0.02, -0.02, 0.025);
-            eyeGrp.add(iris);
-
-            // Pupil
-            const pupil = new THREE.Mesh(
-                new THREE.SphereGeometry(0.085, 20, 20),
-                new THREE.MeshBasicMaterial({ color: 0x020617 })
-            );
-            pupil.scale.set(1.0, 1.1, 0.4);
-            pupil.position.set(-side * 0.02, -0.02, 0.04);
-            eyeGrp.add(pupil);
-
-            // Highlights
-            const highlightBig = new THREE.Mesh(
-                new THREE.SphereGeometry(0.042, 12, 12),
-                new THREE.MeshBasicMaterial({ color: 0xffffff })
-            );
-            highlightBig.position.set(-0.045, 0.055, 0.08);
-            eyeGrp.add(highlightBig);
-
-            const highlightSmall = new THREE.Mesh(
-                new THREE.SphereGeometry(0.02, 10, 10),
-                new THREE.MeshBasicMaterial({ color: 0xffffff })
-            );
-            highlightSmall.position.set(0.04, -0.05, 0.08);
-            eyeGrp.add(highlightSmall);
-
-            // Eyebrow
-            const brow = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, 0.24, 12), hairMat);
-            brow.rotation.z = Math.PI / 2 - side * 0.22;
-            brow.position.set(0, 0.27, 0.02);
-            eyeGrp.add(brow);
-
-            faceGroup.add(eyeGrp);
-            eyeGroups.push(eyeGrp);
-        });
-
-        // Cute Button Nose
-        const nose = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 16), skinMat);
-        nose.scale.set(1.2, 0.85, 1.0);
-        nose.position.set(0, -0.07, 0.74);
-        faceGroup.add(nose);
-
-        // Cheerful Smile
-        const smileGroup = new THREE.Group();
-        smileGroup.position.set(0, -0.25, 0.69);
-        smileGroup.rotation.x = 0.12;
-        faceGroup.add(smileGroup);
-
-        const mouthCavity = new THREE.Mesh(
-            new THREE.CircleGeometry(0.18, 24, Math.PI, Math.PI),
-            new THREE.MeshBasicMaterial({ color: 0x7f1d1d })
-        );
-        smileGroup.add(mouthCavity);
-
-        const teethBar = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.24, 0.045),
-            new THREE.MeshBasicMaterial({ color: 0xffffff })
-        );
-        teethBar.position.set(0, -0.02, 0.005);
-        smileGroup.add(teethBar);
-
-        const tongue = new THREE.Mesh(
-            new THREE.CircleGeometry(0.1, 20, Math.PI, Math.PI),
-            new THREE.MeshBasicMaterial({ color: 0xfb7185 })
-        );
-        tongue.position.set(0, -0.075, 0.008);
-        smileGroup.add(tongue);
-
-        // Sculpted Hair
-        const hairGroup = new THREE.Group();
-        faceGroup.add(hairGroup);
-
-        const hairBackCap = new THREE.Mesh(
-            new THREE.SphereGeometry(0.82, 28, 28, 0, Math.PI * 2, 0, Math.PI * 0.58),
-            hairMat
-        );
-        hairBackCap.scale.set(1.06, 0.98, 0.95);
-        hairBackCap.rotation.x = -0.25;
-        hairGroup.add(hairBackCap);
-
-        const hairPuffs = [
-            { pos: [-0.28, 0.56, 0.48], scale: [0.36, 0.24, 0.3], rot: [0.2, 0.3, -0.4] },
-            { pos: [0.05, 0.62, 0.52], scale: [0.42, 0.26, 0.32], rot: [0.1, -0.2, -0.25] },
-            { pos: [0.38, 0.50, 0.44], scale: [0.32, 0.22, 0.28], rot: [0.2, -0.4, 0.35] },
-            { pos: [-0.55, 0.36, 0.35], scale: [0.26, 0.30, 0.25], rot: [0, 0, 0.5] },
-            { pos: [0.58, 0.32, 0.32], scale: [0.24, 0.28, 0.25], rot: [0, 0, -0.5] },
-            { pos: [-0.12, 0.72, 0.35], scale: [0.38, 0.25, 0.35], rot: [0, 0, 0.15] }
-        ];
-        hairPuffs.forEach((p) => {
-            const puff = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 20), hairMat);
-            puff.position.set(p.pos[0], p.pos[1], p.pos[2]);
-            puff.scale.set(p.scale[0], p.scale[1], p.scale[2]);
-            puff.rotation.set(p.rot[0], p.rot[1], p.rot[2]);
-            hairGroup.add(puff);
-        });
-
-        // Bubble Visor Glass
-        const glassVisor = new THREE.Mesh(
-            new THREE.SphereGeometry(1.02, 36, 36, 0, Math.PI * 2, 0, Math.PI * 0.55),
-            glassVisorMat
-        );
-        glassVisor.rotation.x = Math.PI * 0.48;
-        glassVisor.position.set(0, 0.02, 0.16);
-        headGroup.add(glassVisor);
-
-        // 3. Torso & Backpack
+        // ═══════════════════════════════════════════
+        // 2. TORSO & WAIST PACK
+        // ═══════════════════════════════════════════
         const torsoGroup = new THREE.Group();
-        torsoGroup.position.set(0, -0.32, 0);
+        torsoGroup.position.set(0, -0.42, 0);
         astronautGroup.add(torsoGroup);
 
-        const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.66, 1.05, 32), suitWhiteMat);
-        torsoMesh.scale.set(1.08, 1, 0.85);
+        const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.66, 0.74, 1.1, 32), suitNavyMat);
+        torsoMesh.scale.set(1.08, 1.0, 0.88);
         torsoGroup.add(torsoMesh);
 
-        // Belt
-        const beltMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.67, 0.14, 32), suitBlueMat);
-        beltMesh.scale.set(1.09, 1, 0.86);
-        beltMesh.position.y = -0.32;
-        torsoGroup.add(beltMesh);
+        const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.48, 0.12), suitMintMat);
+        chestPlate.position.set(0, 0.18, 0.46);
+        torsoGroup.add(chestPlate);
 
-        // Pelvis
-        const pelvisMesh = new THREE.Mesh(new THREE.SphereGeometry(0.66, 28, 28), suitWhiteMat);
-        pelvisMesh.scale.set(1.08, 0.65, 0.85);
-        pelvisMesh.position.y = -0.5;
+        const chestInsignia = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.22, 0.04), suitWhiteMat);
+        chestInsignia.position.set(0, 0.18, 0.53);
+        torsoGroup.add(chestInsignia);
+
+        const chestGlowDot = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), suitGoldMat);
+        chestGlowDot.position.set(0, 0.18, 0.56);
+        torsoGroup.add(chestGlowDot);
+
+        [-1, 1].forEach((side) => {
+            const pip = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), side < 0 ? suitPinkMat : neonCyanMat);
+            pip.position.set(side * 0.24, 0.32, 0.5);
+            torsoGroup.add(pip);
+        });
+
+        const pelvisMesh = new THREE.Mesh(new THREE.SphereGeometry(0.72, 32, 32), suitNavyMat);
+        pelvisMesh.scale.set(1.08, 0.65, 0.88);
+        pelvisMesh.position.y = -0.52;
         torsoGroup.add(pelvisMesh);
 
-        // Chest Patch
-        const patchGroup = new THREE.Group();
-        patchGroup.position.set(0.32, 0.18, 0.54);
-        patchGroup.rotation.y = 0.25;
-        torsoGroup.add(patchGroup);
+        const beltStrap = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.74, 0.1, 32), suitDarkMat);
+        beltStrap.scale.set(1.09, 1.0, 0.89);
+        beltStrap.position.y = -0.28;
+        torsoGroup.add(beltStrap);
 
-        const patchBg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.22, 0.06), suitBlueMat);
-        patchGroup.add(patchBg);
-        const patchDot = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 12), cyanGlowMat);
-        patchDot.position.z = 0.035;
-        patchGroup.add(patchDot);
-        const patchRing = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.012, 8, 20), spineGoldMat);
-        patchRing.rotation.set(0.8, 0.4, 0);
-        patchRing.position.z = 0.035;
-        patchGroup.add(patchRing);
+        const beltGold = new THREE.Mesh(new THREE.CylinderGeometry(0.73, 0.75, 0.035, 32), suitGoldMat);
+        beltGold.scale.set(1.1, 1.0, 0.9);
+        beltGold.position.y = -0.22;
+        torsoGroup.add(beltGold);
 
-        // Jetpack Backpack
+        const controlBoxGroup = new THREE.Group();
+        controlBoxGroup.position.set(0.18, -0.28, 0.58);
+        controlBoxGroup.rotation.y = 0.15;
+        torsoGroup.add(controlBoxGroup);
+
+        const controlBoxMesh = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.28, 0.16), suitWhiteMat);
+        controlBoxGroup.add(controlBoxMesh);
+
+        const controlBoxRim = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.3, 0.14), suitCyanMat);
+        controlBoxRim.position.z = -0.01;
+        controlBoxGroup.add(controlBoxRim);
+
+        const cyanBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.04, 20), neonCyanMat);
+        cyanBtn.rotation.x = Math.PI / 2;
+        cyanBtn.position.set(0.08, 0.02, 0.09);
+        controlBoxGroup.add(cyanBtn);
+
+        const panelLine = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.025, 0.02), suitDarkMat);
+        panelLine.position.set(-0.09, 0.02, 0.09);
+        controlBoxGroup.add(panelLine);
+
+        // ═══════════════════════════════════════════
+        // 3. BACKPACK & RED BEACON CAPSULE
+        // ═══════════════════════════════════════════
         const backpackGroup = new THREE.Group();
-        backpackGroup.position.set(0, 0.08, -0.62);
+        backpackGroup.position.set(0, 0.12, -0.62);
         torsoGroup.add(backpackGroup);
 
-        const packMain = new THREE.Mesh(new THREE.BoxGeometry(1.18, 1.12, 0.55), suitWhiteMat);
-        backpackGroup.add(packMain);
+        const packShell = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.25, 0.48), suitWhiteMat);
+        backpackGroup.add(packShell);
 
-        const packTopTrim = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.22, 0.57), suitBlueMat);
-        packTopTrim.position.y = 0.45;
-        backpackGroup.add(packTopTrim);
+        const packCore = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.05, 0.5), suitNavyMat);
+        backpackGroup.add(packCore);
 
-        // Glowing Cyan Vertical Indicator Strips & Thrusters
         [-1, 1].forEach((side) => {
-            const glowBar = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.38, 0.14), cyanGlowMat);
-            glowBar.position.set(side * 0.58, -0.05, 0);
+            const glowBar = new THREE.Mesh(
+                new THREE.BoxGeometry(0.08, 0.48, 0.12),
+                side < 0 ? suitPinkMat : suitLavenderMat
+            );
+            glowBar.position.set(side * 0.38, 0.05, 0.22);
             backpackGroup.add(glowBar);
 
-            // Thruster nozzle
-            const thruster = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.24, 20), suitDarkTrimMat);
-            thruster.position.set(side * 0.35, -0.65, 0.05);
+            const thruster = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.22, 20), suitDarkMat);
+            thruster.position.set(side * 0.32, -0.68, 0.05);
             backpackGroup.add(thruster);
 
-            // Thruster glow
-            const thrustGlow = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), cyanGlowMat);
-            thrustGlow.position.set(side * 0.35, -0.74, 0.05);
-            backpackGroup.add(thrustGlow);
+            const thrusterGlow = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), neonCyanMat);
+            thrusterGlow.position.set(side * 0.32, -0.76, 0.05);
+            backpackGroup.add(thrusterGlow);
         });
 
-        // 4. Arms & Gloves Holding Book
-        [-1, 1].forEach((side) => {
-            const armGroup = new THREE.Group();
-            armGroup.position.set(side * 0.68, 0.18, 0.05);
-            torsoGroup.add(armGroup);
+        const redCapsuleGroup = new THREE.Group();
+        redCapsuleGroup.position.set(0.38, 0.85, -0.15);
+        redCapsuleGroup.rotation.z = -0.18;
+        redCapsuleGroup.rotation.x = -0.1;
+        backpackGroup.add(redCapsuleGroup);
 
-            const shoulderPad = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 24), suitBlueMat);
-            shoulderPad.scale.set(1.1, 0.85, 1.0);
-            armGroup.add(shoulderPad);
+        const redCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.65, 28), redCapsuleMat);
+        redCapsuleGroup.add(redCylinder);
 
-            const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.19, 0.55, 24), suitWhiteMat);
-            upperArm.position.set(side * 0.08, -0.22, 0.22);
-            upperArm.rotation.x = -0.75;
-            upperArm.rotation.z = -side * 0.28;
-            armGroup.add(upperArm);
+        const redCap = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 24), redCapsuleMat);
+        redCap.position.y = 0.32;
+        redCapsuleGroup.add(redCap);
 
-            const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.19, 20, 20), suitWhiteMat);
-            elbow.position.set(side * 0.14, -0.42, 0.42);
-            armGroup.add(elbow);
+        const redBaseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.08, 28), suitDarkMat);
+        redBaseCollar.position.y = -0.34;
+        redCapsuleGroup.add(redBaseCollar);
 
-            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.21, 0.52, 24), suitWhiteMat);
-            forearm.position.set(side * 0.02, -0.44, 0.68);
-            forearm.rotation.x = Math.PI / 2 - 0.1;
-            forearm.rotation.z = side * 0.52;
-            armGroup.add(forearm);
+        // ═══════════════════════════════════════════
+        // 4. CUTE PLUMP CARTOON MARSHMALLOW HANDS
+        // ═══════════════════════════════════════════
+        const createCuteMarshmallowHand = (thumbSign: number) => {
+            const handGroup = new THREE.Group();
 
-            const wristRing = new THREE.Mesh(new THREE.TorusGeometry(0.20, 0.035, 16, 24), suitBlueMat);
-            wristRing.position.set(-side * 0.08, -0.44, 0.86);
-            wristRing.rotation.y = side * 0.45;
-            armGroup.add(wristRing);
+            // 1. Soft Rounded Cyber Cyan Wristband with Glowing LED Ring
+            const wristCuff = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.045, 16, 32), suitCyanMat);
+            wristCuff.rotation.x = Math.PI / 2;
+            handGroup.add(wristCuff);
 
-            const glovePalm = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 20), suitWhiteMat);
-            glovePalm.scale.set(0.9, 0.85, 1.1);
-            glovePalm.position.set(-side * 0.14, -0.44, 1.02);
-            armGroup.add(glovePalm);
+            const wristGlow = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.015, 12, 28), neonCyanMat);
+            wristGlow.rotation.x = Math.PI / 2;
+            wristGlow.position.y = 0.02;
+            handGroup.add(wristGlow);
 
-            for (let f = -1; f <= 1; f++) {
-                const finger = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 12), suitWhiteMat);
-                finger.scale.set(1.3, 0.85, 0.9);
-                finger.position.set(-side * 0.22, -0.44 + f * 0.09, 1.14);
-                armGroup.add(finger);
-            }
-        });
+            // 2. Main Plump Mitten Palm
+            const palmMesh = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), suitWhiteMat);
+            palmMesh.scale.set(1.0, 1.1, 0.85);
+            palmMesh.position.y = 0.18;
+            handGroup.add(palmMesh);
 
-        // 5. Zero-G Floating Legs & Boots
+            // 3. Rounded Mitten Finger Tip Dome
+            const mittTip = new THREE.Mesh(new THREE.SphereGeometry(0.21, 24, 24), suitWhiteMat);
+            mittTip.scale.set(0.95, 0.95, 0.82);
+            mittTip.position.y = 0.32;
+            handGroup.add(mittTip);
+
+            // 4. Cute Stubby Button Thumb
+            const thumbGroup = new THREE.Group();
+            thumbGroup.position.set(thumbSign * 0.16, 0.16, 0.08);
+            thumbGroup.rotation.z = thumbSign * 0.65;
+            thumbGroup.rotation.x = 0.3;
+            handGroup.add(thumbGroup);
+
+            const thumbBase = new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 20), suitWhiteMat);
+            thumbBase.scale.set(1.0, 1.25, 0.95);
+            thumbBase.position.y = 0.08;
+            thumbGroup.add(thumbBase);
+
+            const thumbTip = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), suitWhiteMat);
+            thumbTip.position.y = 0.18;
+            thumbGroup.add(thumbTip);
+
+            // 5. Pastel Cyan Inner Paw/Grip Patch
+            const palmGrip = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 16), suitCyanMat);
+            palmGrip.scale.set(0.9, 0.9, 0.22);
+            palmGrip.position.set(0, 0.18, 0.18);
+            handGroup.add(palmGrip);
+
+            return handGroup;
+        };
+
+        // ── LEFT ARM (Waving Hello `👋`) ──
+        const leftArmGroup = new THREE.Group();
+        leftArmGroup.position.set(-0.68, 0.22, 0.05);
+        torsoGroup.add(leftArmGroup);
+
+        const leftShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 24), suitCyanMat);
+        leftArmGroup.add(leftShoulder);
+
+        const leftUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.21, 0.48, 24), suitNavyMat);
+        leftUpper.position.set(-0.12, 0.18, 0.1);
+        leftUpper.rotation.z = -0.65;
+        leftUpper.rotation.x = 0.25;
+        leftArmGroup.add(leftUpper);
+
+        const leftElbow = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 20), suitCyanMat);
+        leftElbow.position.set(-0.25, 0.38, 0.18);
+        leftArmGroup.add(leftElbow);
+
+        const leftForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.23, 0.44, 24), suitNavyMat);
+        leftForearm.position.set(-0.32, 0.62, 0.24);
+        leftForearm.rotation.z = -0.25;
+        leftForearm.rotation.x = 0.1;
+        leftArmGroup.add(leftForearm);
+
+        const leftHand = createCuteMarshmallowHand(1);
+        leftHand.position.set(-0.36, 0.88, 0.26);
+        leftHand.rotation.z = -0.2;
+        leftHand.rotation.x = 0.25;
+        leftArmGroup.add(leftHand);
+
+        // ── RIGHT ARM (Relaxed Spacewalk Float) ──
+        const rightArmGroup = new THREE.Group();
+        rightArmGroup.position.set(0.68, 0.22, 0.05);
+        torsoGroup.add(rightArmGroup);
+
+        const rightShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 24), suitCyanMat);
+        rightArmGroup.add(rightShoulder);
+
+        const rightUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.21, 0.48, 24), suitNavyMat);
+        rightUpper.position.set(0.12, -0.2, 0.12);
+        rightUpper.rotation.z = -0.32;
+        rightUpper.rotation.x = -0.45;
+        rightArmGroup.add(rightUpper);
+
+        const rightElbow = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 20), suitCyanMat);
+        rightElbow.position.set(0.22, -0.4, 0.28);
+        rightArmGroup.add(rightElbow);
+
+        const rightForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.23, 0.44, 24), suitNavyMat);
+        rightForearm.position.set(0.1, -0.46, 0.52);
+        rightForearm.rotation.x = Math.PI / 2 - 0.25;
+        rightForearm.rotation.y = -0.3;
+        rightArmGroup.add(rightForearm);
+
+        const rightHand = createCuteMarshmallowHand(-1);
+        rightHand.position.set(0.04, -0.44, 0.78);
+        rightHand.rotation.x = Math.PI / 2 + 0.25;
+        rightHand.rotation.y = -0.4;
+        rightHand.rotation.z = -0.25;
+        rightArmGroup.add(rightHand);
+
+        // ═══════════════════════════════════════════
+        // 5. LEGS & SPACE BOOTS
+        // ═══════════════════════════════════════════
         const leftLegGroup = new THREE.Group();
         const rightLegGroup = new THREE.Group();
 
         const buildSpaceLeg = (group: THREE.Group, side: number) => {
-            group.position.set(side * 0.38, -0.68, 0.12);
+            group.position.set(side * 0.42, -0.68, 0.08);
             torsoGroup.add(group);
 
-            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.24, 0.58, 24), suitWhiteMat);
-            thigh.position.set(0, -0.18, 0.25);
-            thigh.rotation.x = -0.85;
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.26, 0.55, 24), suitNavyMat);
+            thigh.position.set(0, -0.16, 0.12);
+            thigh.rotation.x = -0.35;
+            thigh.rotation.z = side * 0.12;
             group.add(thigh);
 
-            const kneePad = new THREE.Mesh(new THREE.SphereGeometry(0.18, 20, 20), suitBlueMat);
+            const kneePad = new THREE.Mesh(
+                new THREE.SphereGeometry(0.22, 20, 20),
+                side < 0 ? suitLavenderMat : suitPinkMat
+            );
             kneePad.scale.set(1.1, 0.9, 0.7);
-            kneePad.position.set(0, -0.18, 0.48);
-            kneePad.rotation.x = -0.4;
+            kneePad.position.set(0, -0.38, 0.24);
             group.add(kneePad);
 
-            const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.55, 24), suitWhiteMat);
-            shin.position.set(0, -0.56, 0.36);
-            shin.rotation.x = -0.25;
+            const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.28, 0.5, 24), suitNavyMat);
+            shin.position.set(0, -0.62, 0.22);
+            shin.rotation.x = -0.15;
             group.add(shin);
 
-            const bootBand = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.04, 16, 28), suitBlueMat);
-            bootBand.rotation.x = Math.PI / 2 - 0.25;
-            bootBand.position.set(0, -0.68, 0.39);
-            group.add(bootBand);
+            const ankleBand = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.035, 12, 28), suitCyanMat);
+            ankleBand.rotation.x = Math.PI / 2;
+            ankleBand.position.set(0, -0.84, 0.24);
+            group.add(ankleBand);
 
             const bootGroup = new THREE.Group();
-            bootGroup.position.set(0, -0.92, 0.52);
-            bootGroup.rotation.x = 0.35;
+            bootGroup.position.set(0, -1.02, 0.34);
             group.add(bootGroup);
 
-            const bootUpper = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), suitWhiteMat);
-            bootUpper.scale.set(0.92, 0.85, 1.35);
+            const bootUpper = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), suitWhiteMat);
+            bootUpper.scale.set(0.94, 0.82, 1.4);
             bootGroup.add(bootUpper);
 
-            const bootSole = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.28, 0.28, 0.12, 24),
-                new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 })
-            );
-            bootSole.scale.set(0.95, 1, 1.35);
+            const bootSole = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.1, 28), suitDarkMat);
+            bootSole.scale.set(0.95, 1.0, 1.4);
             bootSole.position.y = -0.18;
             bootGroup.add(bootSole);
+
+            const soleGlow = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.31, 0.31, 0.04, 28),
+                side < 0 ? suitMintMat : suitGoldMat
+            );
+            soleGlow.scale.set(0.95, 1.0, 1.4);
+            soleGlow.position.y = -0.23;
+            bootGroup.add(soleGlow);
         };
 
         buildSpaceLeg(leftLegGroup, -1);
         buildSpaceLeg(rightLegGroup, 1);
-        leftLegGroup.rotation.set(-0.22, 0.18, -0.15);
+
+        leftLegGroup.rotation.set(-0.12, 0.15, -0.1);
         rightLegGroup.rotation.set(0.08, -0.12, 0.08);
 
-        // 6. Glowing Storybook
-        const bookGroup = new THREE.Group();
-        bookGroup.position.set(-0.04, -0.26, 1.18);
-        bookGroup.rotation.set(0.38, 0.18, -0.08);
-        astronautGroup.add(bookGroup);
-
-        const spine = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.92, 20), suitDarkTrimMat);
-        bookGroup.add(spine);
-
-        [-0.45, 0.45].forEach((yPos) => {
-            const goldCap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 20), spineGoldMat);
-            goldCap.position.y = yPos;
-            bookGroup.add(goldCap);
-        });
-
-        [-1, 1].forEach((side) => {
-            const halfWing = new THREE.Group();
-            halfWing.rotation.y = side * 0.48;
-            bookGroup.add(halfWing);
-
-            const coverMesh = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.9, 0.045), bookCoverMat);
-            coverMesh.position.set(side * 0.35, 0, -0.02);
-            halfWing.add(coverMesh);
-
-            const pageBlock = new THREE.Mesh(new THREE.BoxGeometry(0.63, 0.85, 0.09), glowingPageMat);
-            pageBlock.position.set(side * 0.34, 0, 0.04);
-            halfWing.add(pageBlock);
-
-            for (let p = 0; p < 2; p++) {
-                const fanPage = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.84), glowingPageMat);
-                fanPage.position.set(side * 0.32, 0, 0.09 + p * 0.015);
-                fanPage.rotation.y = -side * (0.08 + p * 0.06);
-                halfWing.add(fanPage);
-            }
-        });
-
-        // ── Background Floating Celestial Elements ──
-        const celestialGroup = new THREE.Group();
-        scene.add(celestialGroup);
-
-        // Mini Ringed Planet (Pastel Lilac & Cyan)
-        const saturnMini = new THREE.Group();
-        saturnMini.position.set(-3.2, 2.1, -2.5);
-        saturnMini.rotation.set(0.4, 0.2, -0.5);
-        celestialGroup.add(saturnMini);
-
-        const planetMiniMesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.45, 28, 28),
-            new THREE.MeshStandardMaterial({ color: 0x818cf8, roughness: 0.45 })
-        );
-        saturnMini.add(planetMiniMesh);
-
-        const ringMini = new THREE.Mesh(
-            new THREE.RingGeometry(0.62, 0.95, 36),
-            new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 })
-        );
-        ringMini.rotation.x = Math.PI / 2;
-        saturnMini.add(ringMini);
-
-        // Crescent/Cratered Moon (Pastel Cyan / Violet)
-        const moonMini = new THREE.Group();
-        moonMini.position.set(3.1, -1.8, -2.0);
-        celestialGroup.add(moonMini);
-
-        const moonMesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.38, 24, 24),
-            new THREE.MeshStandardMaterial({ color: 0xc4b5fd, roughness: 0.7 })
-        );
-        moonMini.add(moonMesh);
-
-        // ── Sparkling Starfield Particles ──
-        const starCount = 220;
+        // ═══════════════════════════════════════════
+        // 6. AMBIENT BACKGROUND STARFIELD
+        // ═══════════════════════════════════════════
+        const starCount = 180;
         const starGeo = new THREE.BufferGeometry();
         const starPos = new Float32Array(starCount * 3);
         for (let i = 0; i < starCount; i++) {
-            starPos[i * 3] = (Math.random() - 0.5) * 16;
+            starPos[i * 3] = (Math.random() - 0.5) * 15;
             starPos[i * 3 + 1] = (Math.random() - 0.5) * 14;
-            starPos[i * 3 + 2] = -Math.random() * 10 + 2;
+            starPos[i * 3 + 2] = -Math.random() * 8 + 2;
         }
         starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 
-        const starTex = createStarSpriteTexture();
+        const starTex = createStarTexture();
         const starMat = new THREE.PointsMaterial({
             size: 0.28,
             map: starTex,
@@ -730,83 +902,175 @@ const SpaceTraveler3D: React.FC = () => {
         const starField = new THREE.Points(starGeo, starMat);
         scene.add(starField);
 
-        // ── Book Magic Emission Sparkles ──
-        const magicParticles: MagicParticle[] = [];
-        const magicGeometries = [
-            new THREE.OctahedronGeometry(0.08, 0),
-            new THREE.TorusGeometry(0.06, 0.02, 6, 12),
-            new THREE.SphereGeometry(0.05, 10, 10),
+        // Soft candy glow puddle under the boots
+        const aura = new THREE.Mesh(
+            new THREE.CircleGeometry(1.85, 48),
+            new THREE.MeshBasicMaterial({
+                color: 0xc084fc,
+                transparent: true,
+                opacity: 0.28,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+            })
+        );
+        aura.rotation.x = -Math.PI / 2;
+        aura.position.y = -2.25;
+        astronautMasterGroup.add(aura);
+
+        const auraRing = new THREE.Mesh(
+            new THREE.RingGeometry(1.15, 1.55, 48),
+            new THREE.MeshBasicMaterial({
+                color: 0x22d3ee,
+                transparent: true,
+                opacity: 0.45,
+                side: THREE.DoubleSide,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+            })
+        );
+        auraRing.rotation.x = -Math.PI / 2;
+        auraRing.position.y = -2.22;
+        astronautMasterGroup.add(auraRing);
+
+        // Orbiting pastel gems
+        const gemSpecs = [
+            { color: 0xfb7185, emissive: 0xbe185d, radius: 2.55, y: 1.35, size: 0.08, speed: 0.45, phase: 0.4 },
+            { color: 0xfbbf24, emissive: 0xf59e0b, radius: 2.7, y: -0.85, size: 0.07, speed: -0.36, phase: 2.1 },
+            { color: 0x22d3ee, emissive: 0x0891b2, radius: 2.4, y: 0.15, size: 0.075, speed: 0.5, phase: 3.6 },
+            { color: 0xc084fc, emissive: 0x7c3aed, radius: 2.85, y: 0.7, size: 0.06, speed: -0.42, phase: 1.2 },
+        ];
+        const gems = gemSpecs.map((spec) => {
+            const mesh = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(spec.size, 1),
+                new THREE.MeshStandardMaterial({
+                    color: spec.color,
+                    emissive: spec.emissive,
+                    emissiveIntensity: 0.7,
+                    roughness: 0.2,
+                    metalness: 0.15,
+                })
+            );
+            scene.add(mesh);
+            return { mesh, ...spec };
+        });
+
+        // ═══════════════════════════════════════════
+        // 7. MULTI-REACTION SYSTEM & PARTICLES
+        // ═══════════════════════════════════════════
+        const reactionParticles: ReactionParticle[] = [];
+        const particleGeos = [
+            new THREE.OctahedronGeometry(0.09, 0),
+            new THREE.TorusGeometry(0.08, 0.025, 8, 16),
+            new THREE.SphereGeometry(0.065, 12, 12),
         ];
 
-        const spawnMagicParticles = (count = 10) => {
-            const worldBookPos = new THREE.Vector3();
-            bookGroup.getWorldPosition(worldBookPos);
+        const particleColors = [0x00f0ff, 0xff5f87, 0xfbbf24, 0xa855f7, 0xffffff];
+
+        const spawnBurstParticles = (count = 20) => {
+            const origin = new THREE.Vector3();
+            headGroup.getWorldPosition(origin);
 
             for (let i = 0; i < count; i++) {
-                const geo = magicGeometries[i % magicGeometries.length];
+                const geo = particleGeos[i % particleGeos.length];
+                const col = particleColors[i % particleColors.length];
                 const mat = new THREE.MeshBasicMaterial({
-                    color: i % 2 === 0 ? 0xffbe3b : 0x00f0ff,
+                    color: col,
                     transparent: true,
                     opacity: 1,
                 });
                 const mesh = new THREE.Mesh(geo, mat);
-                mesh.position.copy(worldBookPos);
-                mesh.position.x += (Math.random() - 0.5) * 0.4;
-                mesh.position.y += (Math.random() - 0.5) * 0.2;
-                mesh.position.z += (Math.random() - 0.5) * 0.2;
+                mesh.position.copy(origin);
+                mesh.position.x += (Math.random() - 0.5) * 0.9;
+                mesh.position.y += (Math.random() - 0.5) * 0.7;
+                mesh.position.z += (Math.random() - 0.5) * 0.7;
                 scene.add(mesh);
 
-                magicParticles.push({
+                reactionParticles.push({
                     mesh,
                     vel: new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.035,
-                        0.02 + Math.random() * 0.035,
-                        (Math.random() - 0.3) * 0.035
+                        (Math.random() - 0.5) * 0.055,
+                        0.03 + Math.random() * 0.05,
+                        (Math.random() - 0.3) * 0.05
+                    ),
+                    rotVel: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.08,
+                        (Math.random() - 0.5) * 0.08,
+                        (Math.random() - 0.5) * 0.08
                     ),
                     life: 1.0,
-                    decay: 0.016 + Math.random() * 0.012,
+                    decay: 0.016 + Math.random() * 0.014,
                 });
             }
         };
 
-        // ── Interaction: Cursor Reaction & "Cursor is Gone" logic ──
+        // ── Interactive State ──
         let mouseX = 0;
         let mouseY = 0;
         let isCursorActive = false;
         let cursorGoneTimer = 0;
-        let flipTimer = 0;
+
+        let reactionMode: 'none' | 'flip' | 'wiggle' | 'peekaboo' | 'wink' = 'none';
+        let reactionTimer = 0;
+        let reactionCycle = 0;
+
+        let isPointerDown = false;
+        let pointerDownTime = 0;
+        let currentSquashY = 1.0;
 
         const onPointerMove = (e: MouseEvent) => {
             const rect = container.getBoundingClientRect();
-            // Calculate relative to the container for precision, or fallback to window
             const cx = e.clientX - (rect.left + rect.width / 2);
             const cy = e.clientY - (rect.top + rect.height / 2);
-            
-            // Normalized from -1 to 1 based on viewport/container proximity
-            mouseX = THREE.MathUtils.clamp(cx / (window.innerWidth * 0.4), -1.2, 1.2);
-            mouseY = THREE.MathUtils.clamp(-cy / (window.innerHeight * 0.4), -1.2, 1.2);
-            
+
+            mouseX = THREE.MathUtils.clamp(cx / (window.innerWidth * 0.38), -1.2, 1.2);
+            mouseY = THREE.MathUtils.clamp(-cy / (window.innerHeight * 0.38), -1.2, 1.2);
+
             isCursorActive = true;
             cursorGoneTimer = 0;
         };
 
         const onPointerLeave = () => {
             isCursorActive = false;
+            isPointerDown = false;
         };
 
-        // Click / Tap to do a joyful Zero-G backflip & star burst
-        const onClick = () => {
-            if (flipTimer <= 0) {
-                flipTimer = 1.0;
-                spawnMagicParticles(18);
+        const onPointerDown = () => {
+            isPointerDown = true;
+            pointerDownTime = performance.now();
+            soundFX.playBoing();
+            spawnBurstParticles(6);
+        };
+
+        const onPointerUp = () => {
+            const pressDuration = performance.now() - pointerDownTime;
+            isPointerDown = false;
+
+            if (pressDuration < 450) {
+                reactionCycle = (reactionCycle + 1) % 4;
+                const modes: ('flip' | 'wiggle' | 'peekaboo' | 'wink')[] = [
+                    'flip',
+                    'wiggle',
+                    'peekaboo',
+                    'wink',
+                ];
+                reactionMode = modes[reactionCycle];
+                reactionTimer = 1.0;
+
+                soundFX.playSparkleChime();
+                spawnBurstParticles(22);
             }
         };
 
         window.addEventListener('pointermove', onPointerMove, { passive: true });
         document.addEventListener('mouseleave', onPointerLeave);
-        container.addEventListener('click', onClick);
+        container.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointerup', onPointerUp);
 
-        // Resize handler
+        const onTouchStart = () => { onPointerDown(); };
+        const onTouchEnd = () => { onPointerUp(); };
+        container.addEventListener('touchstart', onTouchStart, { passive: true });
+        container.addEventListener('touchend', onTouchEnd, { passive: true });
+
         const handleResize = () => {
             if (!container) return;
             const w = container.clientWidth || 480;
@@ -818,11 +1082,12 @@ const SpaceTraveler3D: React.FC = () => {
         const resizeObserver = new ResizeObserver(() => handleResize());
         resizeObserver.observe(container);
 
-        // ── Animation Loop ──
+        // ═══════════════════════════════════════════
+        // 8. ANIMATION LOOP
+        // ═══════════════════════════════════════════
         const clock = new THREE.Clock();
         let animId: number;
 
-        // Current smoothed values
         let curRotX = 0;
         let curRotY = 0;
         let curRotZ = 0;
@@ -835,13 +1100,11 @@ const SpaceTraveler3D: React.FC = () => {
             const delta = Math.min(clock.getDelta(), 0.1);
             const elapsed = clock.getElapsedTime();
 
-            // Check if cursor has been stationary or gone for too long
             cursorGoneTimer += delta;
             if (cursorGoneTimer > 3.0) {
                 isCursorActive = false;
             }
 
-            // Target positions and rotations based on whether cursor is present or gone
             let targetRotX = 0;
             let targetRotY = 0;
             let targetRotZ = 0;
@@ -849,94 +1112,144 @@ const SpaceTraveler3D: React.FC = () => {
             let targetPosY = 0;
 
             if (isCursorActive) {
-                // CURSOR ACTIVE: Directly and smoothly tracks the computer cursor
-                targetRotY = mouseX * 0.52;
-                targetRotX = -mouseY * 0.32;
-                targetRotZ = -mouseX * 0.12;
+                targetRotY = mouseX * 0.54;
+                targetRotX = -mouseY * 0.34;
+                targetRotZ = -mouseX * 0.14;
                 targetPosX = mouseX * 0.28;
                 targetPosY = mouseY * 0.22;
             } else {
-                // CURSOR IS GONE: Move 3D art to the side & enter charming idle floating pose
-                // Gently face towards the left/side (where the user's title & bio are)
-                targetPosX = -0.32 + Math.cos(elapsed * 1.1) * 0.08;
-                targetPosY = 0.02 + Math.sin(elapsed * 1.4) * 0.12;
-                targetRotY = -0.35 + Math.sin(elapsed * 1.2) * 0.1;
+                targetPosX = -0.18 + Math.cos(elapsed * 1.1) * 0.08;
+                targetPosY = 0.04 + Math.sin(elapsed * 1.4) * 0.12;
+                targetRotY = -0.18 + Math.sin(elapsed * 1.2) * 0.08;
                 targetRotX = 0.06 + Math.cos(elapsed * 0.9) * 0.05;
                 targetRotZ = 0.08 + Math.sin(elapsed * 0.7) * 0.04;
             }
 
-            // Handle joyful 360° Zero-G Flip if clicked
-            if (flipTimer > 0) {
-                flipTimer -= delta * 1.25;
-                if (flipTimer < 0) flipTimer = 0;
-                const progress = 1 - flipTimer;
-                const easeFlip = Math.sin(progress * Math.PI * 2);
-                targetRotX += progress * Math.PI * 2;
-                targetRotY += easeFlip * 0.4;
+            // SQUASH & STRETCH
+            const targetSquash = isPointerDown ? 0.88 : 1.0;
+            currentSquashY = THREE.MathUtils.lerp(currentSquashY, targetSquash, 0.18);
+            const squashXZ = 1.0 + (1.0 - currentSquashY) * 0.6;
+            astronautGroup.scale.set(squashXZ, currentSquashY, squashXZ);
+
+            // MULTI-REACTION PROCESSING
+            if (reactionTimer > 0) {
+                reactionTimer -= delta * 1.25;
+                if (reactionTimer < 0) {
+                    reactionTimer = 0;
+                    reactionMode = 'none';
+                }
+                const progress = 1 - reactionTimer;
+
+                if (reactionMode === 'flip') {
+                    const easeFlip = Math.sin(progress * Math.PI * 2);
+                    targetRotX += progress * Math.PI * 2;
+                    targetRotY += easeFlip * 0.45;
+                    targetPosY += Math.sin(progress * Math.PI) * 0.6;
+                } else if (reactionMode === 'wiggle') {
+                    targetRotZ += Math.sin(progress * Math.PI * 6) * 0.25;
+                    targetRotY += Math.cos(progress * Math.PI * 5) * 0.22;
+                    leftArmGroup.rotation.z += Math.sin(progress * Math.PI * 6) * 0.35;
+                    rightArmGroup.rotation.z -= Math.cos(progress * Math.PI * 6) * 0.35;
+                } else if (reactionMode === 'peekaboo') {
+                    const jumpZ = Math.sin(progress * Math.PI) * 1.2;
+                    const jumpY = Math.sin(progress * Math.PI) * 0.45;
+                    astronautGroup.position.z = jumpZ;
+                    targetPosY += jumpY;
+                } else if (reactionMode === 'wink') {
+                    targetRotZ += Math.sin(progress * Math.PI * 0.22);
+                    targetRotY += Math.sin(progress * Math.PI * 0.18);
+                }
+            } else {
+                astronautGroup.position.z = 0;
             }
 
-            // Smooth interpolation (lerp) for fluid, weighted physics
-            const lerpFactor = isCursorActive ? 0.07 : 0.04;
+            const lerpFactor = isCursorActive ? 0.08 : 0.04;
             curRotX = THREE.MathUtils.lerp(curRotX, targetRotX, lerpFactor);
             curRotY = THREE.MathUtils.lerp(curRotY, targetRotY, lerpFactor);
             curRotZ = THREE.MathUtils.lerp(curRotZ, targetRotZ, lerpFactor);
             curPosX = THREE.MathUtils.lerp(curPosX, targetPosX, lerpFactor);
             curPosY = THREE.MathUtils.lerp(curPosY, targetPosY, lerpFactor);
 
-            // Zero-G floating bobbing
+            // Zero-G breathing and floating bob
             const floatBobY = Math.sin(elapsed * 1.6) * 0.14;
             const floatBobX = Math.cos(elapsed * 1.0) * 0.06;
 
-            astronautGroup.position.set(curPosX + floatBobX, curPosY + floatBobY, 0);
+            astronautGroup.position.x = curPosX + floatBobX;
+            astronautGroup.position.y = curPosY + floatBobY;
             astronautGroup.rotation.set(curRotX, curRotY, curRotZ);
 
-            // Legs gentle kicking in zero-G
-            leftLegGroup.rotation.x = -0.22 + Math.sin(elapsed * 1.8) * 0.08;
-            rightLegGroup.rotation.x = 0.08 - Math.sin(elapsed * 1.8) * 0.08;
+            // ── DYNAMIC BLINKING & 3D FACE GLANCE ──
+            const blinkCycle = elapsed % 3.6;
+            let currentEyeScale = 1.0;
+            if (blinkCycle > 3.42 && blinkCycle < 3.56 && reactionMode === 'none') {
+                currentEyeScale = 0.08; // Natural smooth blink
+            }
 
-            // Cute periodic eye blinking + tracking
-            const blinkCycle = elapsed % 3.8;
-            const eyeScaleY = (blinkCycle > 3.62 && blinkCycle < 3.76) ? 0.1 : 1.12;
-            const eyeLookX = isCursorActive ? mouseX * 0.08 : Math.sin(elapsed * 1.3) * 0.05;
-            const eyeLookY = isCursorActive ? mouseY * 0.06 : 0;
+            // Eyes glance toward cursor smoothly across the visor
+            const targetFaceLookX = isCursorActive ? mouseX * 0.08 : Math.sin(elapsed * 1.2) * 0.04;
+            const targetFaceLookY = isCursorActive ? mouseY * 0.06 : 0;
 
-            eyeGroups.forEach((eye, idx) => {
-                eye.children[0].scale.y = eyeScaleY; // Sclera blinks
-                eye.rotation.y = (idx === 0 ? -1 : 1) * 0.22 + eyeLookX;
-                eye.rotation.x = -eyeLookY;
+            digitalFaceGroup.position.x = targetFaceLookX;
+            digitalFaceGroup.position.y = 0.04 + targetFaceLookY;
+
+            // Apply blink to both eyes (or wink on wink reaction)
+            eyeMeshes.forEach((eye) => {
+                const isWinking = reactionMode === 'wink' && !eye.leftEye;
+                eye.group.scale.y = isWinking ? 0.08 : currentEyeScale;
             });
 
-            // Glowing antenna pulse
-            antBulbMat.emissiveIntensity = 0.9 + Math.sin(elapsed * 3.5) * 0.35;
-            antPointLight.intensity = 1.0 + Math.sin(elapsed * 3.5) * 0.3;
+            // Mouth gently pulses with breathing
+            mouthGroup.scale.set(
+                1.0 + Math.sin(elapsed * 2.2) * 0.04,
+                1.0 + Math.cos(elapsed * 2.2) * 0.05,
+                1.0
+            );
 
-            // Celestial rotation
-            saturnMini.rotation.y = elapsed * 0.25;
-            saturnMini.position.y = 2.1 + Math.sin(elapsed * 0.8) * 0.1;
-            moonMini.rotation.y = elapsed * 0.15;
-            moonMini.position.y = -1.8 + Math.cos(elapsed * 0.9) * 0.1;
+            // Zero-gravity leg kicks
+            leftLegGroup.rotation.x = -0.12 + Math.sin(elapsed * 1.8) * 0.08;
+            rightLegGroup.rotation.x = 0.08 - Math.sin(elapsed * 1.8) * 0.08;
 
-            // Starfield slow drift
-            starField.rotation.y = elapsed * 0.015;
-            starField.rotation.x = Math.sin(elapsed * 0.01) * 0.05;
+            // Cute Hand Animations
+            leftArmGroup.rotation.z = Math.sin(elapsed * 3.4) * 0.12;
+            leftHand.rotation.z = -0.2 + Math.sin(elapsed * 4.2) * 0.18;
+            leftHand.rotation.x = 0.25 + Math.cos(elapsed * 3.2) * 0.08;
 
-            // Book magic emission particles update
-            if (Math.random() < 0.12) {
-                spawnMagicParticles(1);
-            }
-            for (let i = magicParticles.length - 1; i >= 0; i--) {
-                const p = magicParticles[i];
+            rightHand.rotation.x = Math.PI / 2 + 0.25 + Math.cos(elapsed * 1.8) * 0.08;
+            rightHand.position.y = -0.44 + Math.sin(elapsed * 2.0) * 0.04;
+
+            // Starfield rotation
+            starField.rotation.y = elapsed * 0.02;
+
+            neonCyanMat.emissiveIntensity = 0.75 + Math.sin(elapsed * 3.2) * 0.28;
+            aura.scale.setScalar(1 + Math.sin(elapsed * 1.6) * 0.06);
+            auraRing.rotation.z = elapsed * 0.35;
+
+            gems.forEach((gem) => {
+                const a = elapsed * gem.speed + gem.phase;
+                gem.mesh.position.set(
+                    Math.cos(a) * gem.radius,
+                    gem.y + Math.sin(elapsed * 1.5 + gem.phase) * 0.12,
+                    -1.8 + Math.sin(a) * 0.35
+                );
+                gem.mesh.rotation.y += 0.03;
+                gem.mesh.rotation.x += 0.015;
+            });
+
+            // Reaction particles update
+            for (let i = reactionParticles.length - 1; i >= 0; i--) {
+                const p = reactionParticles[i];
                 p.mesh.position.add(p.vel);
-                p.mesh.rotation.x += 0.03;
-                p.mesh.rotation.y += 0.04;
+                p.mesh.rotation.x += p.rotVel.x;
+                p.mesh.rotation.y += p.rotVel.y;
+                p.mesh.rotation.z += p.rotVel.z;
                 p.life -= p.decay;
                 (p.mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, p.life);
-                p.mesh.scale.setScalar(0.4 + p.life * 0.7);
+                p.mesh.scale.setScalar(0.4 + p.life * 0.85);
                 if (p.life <= 0) {
                     scene.remove(p.mesh);
                     p.mesh.geometry.dispose();
                     (p.mesh.material as THREE.Material).dispose();
-                    magicParticles.splice(i, 1);
+                    reactionParticles.splice(i, 1);
                 }
             }
 
@@ -950,10 +1263,12 @@ const SpaceTraveler3D: React.FC = () => {
             cancelAnimationFrame(animId);
             window.removeEventListener('pointermove', onPointerMove);
             document.removeEventListener('mouseleave', onPointerLeave);
-            container.removeEventListener('click', onClick);
+            container.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('pointerup', onPointerUp);
+            container.removeEventListener('touchstart', onTouchStart);
+            container.removeEventListener('touchend', onTouchEnd);
             resizeObserver.disconnect();
 
-            // Dispose renderer and geometries
             renderer.dispose();
             if (container.contains(renderer.domElement)) {
                 container.removeChild(renderer.domElement);
@@ -968,11 +1283,12 @@ const SpaceTraveler3D: React.FC = () => {
                 width: '100%',
                 height: '100%',
                 position: 'relative',
-                cursor: 'grab',
+                cursor: 'pointer',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
+                touchAction: 'none',
             }}
-            title="Click me for a Zero-G Twirl!"
+            title="Click or Tap me for playful reactions!"
         />
     );
 };
