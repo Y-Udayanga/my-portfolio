@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FolderKanban, Award, Mail, LogOut, ExternalLink, Menu, X, UserCog, FileText } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Award, Mail, LogOut, ExternalLink, Menu, X, UserCog, FileText, Trophy } from 'lucide-react';
 import './AdminLayout.css';
 
 export default function AdminLayout() {
@@ -22,6 +22,7 @@ export default function AdminLayout() {
     const navItems = [
         { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
         { path: '/admin/projects', label: 'Projects', icon: FolderKanban, exact: false },
+        { path: '/admin/hackathons', label: 'Hackathons', icon: Trophy, exact: false },
         { path: '/admin/certificates', label: 'Certificates', icon: Award, exact: false },
         { path: '/admin/messages', label: 'Messages', icon: Mail, exact: false },
         { path: '/admin/contact', label: 'Contact Details', icon: UserCog, exact: false },
@@ -107,6 +108,7 @@ export default function AdminLayout() {
                         <h1 className="admin-page-title">
                             {location.pathname === '/admin' && 'Dashboard'}
                             {location.pathname.startsWith('/admin/projects') && 'Projects'}
+                            {location.pathname.startsWith('/admin/hackathons') && 'Hackathons'}
                             {location.pathname.startsWith('/admin/certificates') && 'Certificates'}
                             {location.pathname.startsWith('/admin/messages') && 'Messages'}
                             {location.pathname.startsWith('/admin/contact') && 'Contact Info'}

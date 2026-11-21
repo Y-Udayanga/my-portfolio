@@ -1,0 +1,5 @@
+.hackathon-modal {
+  max-width: 720px;
+  max-height: min(92vh, 920px);
+  overflow: auto;
+}

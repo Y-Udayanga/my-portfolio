@@ -2,6 +2,7 @@ export const PUBLIC_PAGES = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Projects', path: '/projects' },
+    { name: 'Hackathon', path: '/hackathon' },
     { name: 'Certificate', path: '/certificate' },
     { name: 'Resume', path: '/resume' },
     { name: 'Contact', path: '/contact' },

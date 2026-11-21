@@ -174,6 +174,10 @@ export default function Dashboard() {
                             <PlusCircle size={20} />
                             <span>Add New Certificate</span>
                         </Link>
+                        <Link to="/admin/hackathons" className="action-button">
+                            <PlusCircle size={20} />
+                            <span>Post Hackathon</span>
+                        </Link>
                     </div>
 
                     <div className="admin-tip-box">

@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import About from './pages/About';
 import Projects from './pages/Projects';
+import { HackathonDetail, HackathonList } from './pages/Hackathon';
 import Certificate from './pages/Certificate';
 import Resume from './pages/Resume';
 import Contact from './pages/Contact';
@@ -21,6 +22,7 @@ import AdminLayout from './layouts/AdminLayout';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
 import ManageProjects from './pages/admin/ManageProjects';
+import ManageHackathons from './pages/admin/ManageHackathons';
 import ManageCertificates from './pages/admin/ManageCertificates';
 import ViewMessages from './pages/admin/ViewMessages';
 import ManageContact from './pages/admin/ManageContact';
@@ -42,6 +44,7 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="projects" element={<ManageProjects />} />
+          <Route path="hackathons" element={<ManageHackathons />} />
           <Route path="certificates" element={<ManageCertificates />} />
           <Route path="messages" element={<ViewMessages />} />
           <Route path="contact" element={<ManageContact />} />
@@ -77,6 +80,8 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
                   <Route path="/" element={<Home />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/projects" element={<Projects />} />
+                  <Route path="/hackathon" element={<HackathonList />} />
+                  <Route path="/hackathon/:id" element={<HackathonDetail />} />
                   <Route path="/certificate" element={<Certificate />} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/contact" element={<Contact />} />
@@ -87,6 +92,8 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/projects" element={<Projects />} />
+                    <Route path="/hackathon" element={<HackathonList />} />
+                    <Route path="/hackathon/:id" element={<HackathonDetail />} />
                     <Route path="/certificate" element={<Certificate />} />
                     <Route path="/resume" element={<Resume />} />
                     <Route path="/contact" element={<Contact />} />
