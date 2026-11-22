@@ -1,12 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, type ReactNode } from 'react';
-import { flushSync } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PUBLIC_PAGES, normalizePath, publicPageIndex, type PublicPath } from '../navigation/pages';
-
-type ViewTransitionLike = { finished: Promise<void> };
-
-const supportsViewTransition = () =>
-    typeof document !== 'undefined' && typeof document.startViewTransition === 'function';
 
 const PageNavContext = createContext<(to: string) => void>(() => {});
 
@@ -60,40 +54,18 @@ const ScrollPageProvider = ({ children }: { children: ReactNode }) => {
         if (destination === current || lockRef.current) return;
         if (publicPageIndex(destination) < 0) return;
 
-        const fromIndex = publicPageIndex(current);
-        const toIndex = publicPageIndex(destination);
-        document.documentElement.dataset.vtDir = toIndex < fromIndex ? 'back' : 'forward';
-
-        const update = () => {
-            flushSync(() => {
-                navigate(destination);
-            });
-            window.scrollTo(0, 0);
-        };
-
-        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         lockRef.current = true;
         wheelAccum.current = 0;
 
-        if (!reduced && supportsViewTransition()) {
-            const transition = document.startViewTransition(update) as ViewTransitionLike;
-            transition.finished.finally(() => {
-                lockRef.current = false;
-            });
-            return;
-        }
+        navigate(destination);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        update();
         window.setTimeout(() => {
             lockRef.current = false;
-        }, 700);
+        }, 500);
     }, [navigate]);
 
     useEffect(() => {
-        if (supportsViewTransition()) {
-            document.documentElement.classList.add('vt-ready');
-        }
-
         const stepBy = (direction: 1 | -1) => {
             const index = publicPageIndex(pathRef.current);
             if (index < 0) return;

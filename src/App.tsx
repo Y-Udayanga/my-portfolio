@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 
 import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
@@ -75,31 +74,16 @@ const AppContent = ({ loading, setLoading }: { loading: boolean; setLoading: (lo
             <Navbar />
 
             <main className="main-content">
-              {typeof document !== 'undefined' && typeof document.startViewTransition === 'function' ? (
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/projects" element={<Projects />} />
-                  <Route path="/hackathon" element={<HackathonList />} />
-                  <Route path="/hackathon/:id" element={<HackathonDetail />} />
-                  <Route path="/certificate" element={<Certificate />} />
-                  <Route path="/resume" element={<Resume />} />
-                  <Route path="/contact" element={<Contact />} />
-                </Routes>
-              ) : (
-                <AnimatePresence mode="wait">
-                  <Routes location={location} key={location.pathname}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/hackathon" element={<HackathonList />} />
-                    <Route path="/hackathon/:id" element={<HackathonDetail />} />
-                    <Route path="/certificate" element={<Certificate />} />
-                    <Route path="/resume" element={<Resume />} />
-                    <Route path="/contact" element={<Contact />} />
-                  </Routes>
-                </AnimatePresence>
-              )}
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/hackathon" element={<HackathonList />} />
+                <Route path="/hackathon/:id" element={<HackathonDetail />} />
+                <Route path="/certificate" element={<Certificate />} />
+                <Route path="/resume" element={<Resume />} />
+                <Route path="/contact" element={<Contact />} />
+              </Routes>
             </main>
           </div>
         </ScrollPageProvider>

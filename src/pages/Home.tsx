@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Rocket, Award, Radio, Code, Palette, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageTransition from '../components/PageTransition';
+import RobotCompanion3D from '../components/RobotCompanion3D';
+import HolographicOrbit from '../components/HolographicOrbit';
 import './Home.css';
 
 const useTypewriter = (text: string, speed = 50, delay = 500) => {
@@ -123,14 +125,10 @@ const Home = () => {
                             <span>Fast Perf</span>
                         </div>
 
-                        {/* Central holographic shape */}
-                        <div className="holo-shape-container">
-                            <div className="holo-ring ring-1" />
-                            <div className="holo-ring ring-2" />
-                            <div className="holo-ring ring-3" />
-                            <div className="holo-core">
-                                <img src="/logo.png" alt="Yasindu Udayanga Logo" className="holo-core-logo" />
-                            </div>
+                        {/* 3D Robot Companion on Sci-Fi Orbit Stage */}
+                        <div className="robot-stage">
+                            <HolographicOrbit />
+                            <RobotCompanion3D />
                         </div>
                     </motion.div>
                 </div>
