@@ -49,12 +49,13 @@
   padding-left: 8px;
 }
 
-.logo-glow {
-  width: 8px;
-  height: 8px;
-  background-color: var(--admin-primary);
+.admin-logo-img {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  box-shadow: 0 0 12px var(--admin-primary);
+  object-fit: cover;
+  border: 1px solid rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
 }
 
 .admin-logo h2 {

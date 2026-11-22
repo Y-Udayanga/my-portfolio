@@ -66,25 +66,14 @@
   gap: 12px;
 }
 
-.login-logo-glow {
-  width: 48px;
-  height: 48px;
-  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+.login-logo-img {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  position: relative;
+  object-fit: cover;
+  border: 1.5px solid rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.35), 0 0 40px rgba(168, 85, 247, 0.2);
   margin-bottom: 8px;
-}
-
-.login-logo-glow::after {
-  content: '';
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  width: 12px;
-  height: 12px;
-  background-color: #6366f1;
-  border-radius: 50%;
-  box-shadow: 0 0 15px #6366f1;
 }
 
 .login-header h1 {

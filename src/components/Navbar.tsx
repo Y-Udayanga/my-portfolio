@@ -32,12 +32,8 @@ const Navbar = () => {
             <div className="navbar-scan-line" />
 
             <div className="navbar-container container">
-                <NavLink to="/" className="navbar-logo" onClick={closeMobileMenu}>
-                    <span className="logo-bracket">[</span>
-                    <span className="logo-text">Y</span>
-                    <span className="logo-dot text-gradient">.</span>
-                    <span className="logo-text">U</span>
-                    <span className="logo-bracket">]</span>
+                <NavLink to="/" className="navbar-logo" onClick={closeMobileMenu} aria-label="Home">
+                    <img src="/logo.png" alt="Yasindu Udayanga Logo" className="navbar-logo-img" />
                 </NavLink>
 
                 {/* Desktop Menu */}

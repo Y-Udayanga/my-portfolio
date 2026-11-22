@@ -49,7 +49,7 @@ export default function AdminLayout() {
             <aside className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="admin-sidebar-header">
                     <div className="admin-logo">
-                        <span className="logo-glow"></span>
+                        <img src="/logo.png" alt="Logo" className="admin-logo-img" />
                         <h2>Admin Portal</h2>
                     </div>
                     <button 

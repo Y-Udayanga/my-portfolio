@@ -99,17 +99,31 @@
 
 /* ── Logo ── */
 .navbar-logo {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.4rem;
-  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0;
+  text-decoration: none;
   transition: all 0.3s ease;
 }
 
+.navbar-logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: block;
+}
+
 .navbar-logo:hover {
-  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4));
+  filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.5));
+}
+
+.navbar-logo:hover .navbar-logo-img {
+  border-color: rgba(168, 85, 247, 0.8);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), 0 0 35px rgba(168, 85, 247, 0.4);
+  transform: rotate(20deg) scale(1.12);
 }
 
 .logo-bracket {

@@ -238,6 +238,28 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
               transition={{ duration: 0.8, ease: 'easeOut' }}
               style={{ textAlign: 'center', marginBottom: '2rem' }}
             >
+              <motion.div
+                initial={{ scale: 0.6, opacity: 0, rotate: -20 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                style={{ display: 'inline-block', marginBottom: '1.25rem' }}
+              >
+                <img
+                  src="/logo.png"
+                  alt="Yasindu Udayanga Logo"
+                  style={{
+                    width: '95px',
+                    height: '95px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '2px solid rgba(0, 240, 255, 0.4)',
+                    boxShadow: '0 0 30px rgba(0, 240, 255, 0.4), 0 0 60px rgba(168, 85, 247, 0.25)',
+                    background: '#040814',
+                    display: 'block',
+                    margin: '0 auto',
+                  }}
+                />
+              </motion.div>
               <motion.h1
                 style={{
                   fontSize: 'clamp(2rem, 5vw, 3.5rem)',

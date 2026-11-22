@@ -45,7 +45,7 @@ export default function Login() {
 
                 <div className="login-card">
                     <div className="login-header">
-                        <div className="login-logo-glow"></div>
+                        <img src="/logo.png" alt="Yasindu Udayanga Logo" className="login-logo-img" />
                         <h1>System Admin</h1>
                         <p>Authenticate to access the dashboard portal</p>
                     </div>

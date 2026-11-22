@@ -51,11 +51,6 @@ const About = () => {
                                 <div className="image-scan-line" />
                             </div>
                         </div>
-
-                        <div className="experience-badge">
-                            <span className="years">3+</span>
-                            <span className="text">Years of<br />Experience</span>
-                        </div>
                     </motion.div>
 
                     <motion.div

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Rocket, Award, Radio, Code, Palette, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageTransition from '../components/PageTransition';
-import SpaceTraveler3D from '../components/SpaceTraveler3D';
 import './Home.css';
 
 const useTypewriter = (text: string, speed = 50, delay = 500) => {
@@ -124,9 +123,14 @@ const Home = () => {
                             <span>Fast Perf</span>
                         </div>
 
-                        {/* SpaceTraveler 3D Cute Model */}
-                        <div className="hero-3d-canvas">
-                            <SpaceTraveler3D />
+                        {/* Central holographic shape */}
+                        <div className="holo-shape-container">
+                            <div className="holo-ring ring-1" />
+                            <div className="holo-ring ring-2" />
+                            <div className="holo-ring ring-3" />
+                            <div className="holo-core">
+                                <img src="/logo.png" alt="Yasindu Udayanga Logo" className="holo-core-logo" />
+                            </div>
                         </div>
                     </motion.div>
                 </div>
